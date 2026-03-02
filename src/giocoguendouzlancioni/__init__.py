@@ -206,11 +206,41 @@ def move_missile(m):
     m['x'] -= m['speed']
 
 def draw_missile(surface, m):
-    pygame.draw.rect(surface, (255, 100, 0), (m['x'], m['y'], m['width'], m['height']))
-    pygame.draw.polygon(surface, (200, 50, 0), [
-        (m['x'] + m['width'], m['y'] + m['height'] // 2),
-        (m['x'] + m['width'] + 15, m['y']),
-        (m['x'] + m['width'] + 15, m['y'] + m['height'])
+    cy = m['y'] + m['height'] // 2
+
+    # Corpo ellittico grigio metallico (niente rettangolo arancione)
+    pygame.draw.ellipse(surface, (160, 160, 170), (m['x'], m['y'] + 3, m['width'], m['height'] - 6))
+    pygame.draw.ellipse(surface, (210, 210, 220), (m['x'] + 4, m['y'] + 5, m['width'] - 12, 5))
+
+    # Punta (sinistra)
+    pygame.draw.polygon(surface, (200, 200, 210), [
+        (m['x'], cy),
+        (m['x'] - 12, cy - 6),
+        (m['x'] - 12, cy + 6)
+    ])
+
+    # Alette posteriori (destra)
+    pygame.draw.polygon(surface, (130, 130, 140), [
+        (m['x'] + m['width'], m['y']),
+        (m['x'] + m['width'] + 10, m['y'] - 8),
+        (m['x'] + m['width'] + 10, m['y'] + 4)
+    ])
+    pygame.draw.polygon(surface, (130, 130, 140), [
+        (m['x'] + m['width'], m['y'] + m['height']),
+        (m['x'] + m['width'] + 10, m['y'] + m['height'] - 4),
+        (m['x'] + m['width'] + 10, m['y'] + m['height'] + 8)
+    ])
+
+    # Fiamma di scarico
+    pygame.draw.polygon(surface, (255, 180, 0), [
+        (m['x'] + m['width'] + 10, cy - 4),
+        (m['x'] + m['width'] + 10, cy + 4),
+        (m['x'] + m['width'] + 22, cy)
+    ])
+    pygame.draw.polygon(surface, (255, 80, 0), [
+        (m['x'] + m['width'] + 12, cy - 2),
+        (m['x'] + m['width'] + 12, cy + 2),
+        (m['x'] + m['width'] + 20, cy)
     ])
 
 
@@ -349,8 +379,8 @@ def menu():
         screen.blit(title, (x, 100))
 
         hover_enter = button_enter.collidepoint(mouse_pos)
-        color = (255, 255, 255) if hover_enter else (200, 200, 200)
-        border = (255, 220, 0) if hover_enter else (150, 150, 150)
+        color = GREEN if hover_enter else (200, 200, 200)
+        border = (50, 180, 50) if hover_enter else (150, 150, 150)
         pygame.draw.rect(screen, color, button_enter, border_radius=15)
         pygame.draw.rect(screen, border, button_enter, 4, border_radius=15)
         txt = button_font.render("ENTER", True, BLACK)
