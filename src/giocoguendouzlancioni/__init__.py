@@ -785,4 +785,3 @@ def game_over_screen(score):
 
 if __name__ == "__main__":
     main()
-
