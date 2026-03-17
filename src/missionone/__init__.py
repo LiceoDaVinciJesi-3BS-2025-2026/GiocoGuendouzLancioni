@@ -846,7 +846,7 @@ def show_menu():
     button_settings = pygame.Rect(WIDTH - 90, 20, 70, 70)
 
     # Carica l'immagine del razzo.
-    razzo_menu = load(files("giocoguendouzlancioni") / "razzo.png")
+    razzo_menu = load(files("missionone") / "razzo.png")
     # Se caricata.
     if razzo_menu:
         # Scala l'immagine.
