@@ -1,6 +1,8 @@
 # resources - presenta le funzioni per caricare materiali(immagini e suoni) nel gioco
 
-# Authors_
+# License: See LICENSE file in the project root for details.
+
+# Authors:
 # Elena Lancioni
 # Aziz Guendouz
 
