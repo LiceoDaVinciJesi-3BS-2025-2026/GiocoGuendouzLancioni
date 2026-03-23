@@ -3,6 +3,7 @@ In questo gioco devi sparare ai tuoi nemici e cercare di non venire a tua volta 
 
 ## indicazioni per giocare
 ### *Attacca e difenditi*
+<img width="989" height="741" alt="Screenshot 2026-03-23 214657" src="https://github.com/user-attachments/assets/7dbd43d7-eaf1-40ca-ae5c-b3b01951de0c" />
 Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita diminuirà e il gioco termina.
 
 ### *Diventa il migliore*
