@@ -26,7 +26,7 @@ Inoltre abbiamo anche usato le seguenti intelligenze artificiali:
 + Google Gemini
 + ChatGPT
 + Adobe
-+ (Google)
++ PixaBay
 
 
 ## Organizzazione del lavoro
