@@ -45,7 +45,7 @@ Per raliizzare il codice abbiamo lavorato in questo modo:
 + E.L ha svolto l'importazione delle librerie
   
 + A.G ha fatto le seguenti funzioni:
-  - play_music
+  * play_music
   - load_high_score
   - save_high_score
   - make_boss_missile
