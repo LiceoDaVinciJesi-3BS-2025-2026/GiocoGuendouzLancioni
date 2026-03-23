@@ -8,6 +8,8 @@ from importlib.resources import files
 
 import pygame
 
+from .resources import get_image, get_sound
+
 # ───────────── SEZIONE 2: INIZIALIZZAZIONE DI PYGAME ─────────────
 # Inizializza tutti i moduli di pygame necessari.
 pygame.init()
