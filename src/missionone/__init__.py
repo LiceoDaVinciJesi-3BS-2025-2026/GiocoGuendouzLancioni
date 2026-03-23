@@ -1,4 +1,10 @@
-# ───────────── SEZIONE 1: IMPORTAZIONE DELLE LIBRERIE ─────────────
+# License: See LICENSE file in the project root for details.
+
+# Authors: 
+# Elena lancioni
+# Aziz Guendouz
+
+SEZIONE 1: IMPORTAZIONE DELLE LIBRERIE ─────────────
 
 import math
 import os
