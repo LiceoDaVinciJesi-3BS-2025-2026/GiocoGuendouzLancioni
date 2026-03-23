@@ -67,10 +67,10 @@ HIGH_SCORE = 0
 
 # ───────────── SEZIONE 6: GESTIONE AUDIO (MUSICA) ─────────────
 # Stringa con il percorso completo del file musicale del menu.
-MENU_MUSIC_FILE = files("missionone") / "the_mountain-space-133254.mp3"
+MENU_MUSIC_FILE = files("sounds") / "the_mountain-space-133254.mp3"
 # Stringa con il percorso completo del file musicale di gioco.
 GAME_MUSIC_FILE = (
-    files("missionone") / "momotmusic-speed-of-light-447363.mp3"
+    files("sounds") / "momotmusic-speed-of-light-447363.mp3"
 )
 # Variabile globale per il suono del click, inizialmente nulla.
 click_sound = None
@@ -119,14 +119,14 @@ def load(path):
 # Controlla se il file del suono del click esiste.
 if os.path.exists(
     # PROF: nome ASSURDO per un file da caricare...
-    files("missionone")
+    files("sounds")
     / "ES_User Interface, Click, Pop Up, Alert Tones - Epidemic Sound - 0813-1088.wav"
 ):
     # Prova a caricare il suono.
     try:
         # Assegna il suono caricato alla variabile globale.
         click_sound = pygame.mixer.Sound(
-            files("missionone")
+            files("sounds")
             / "ES_User Interface, Click, Pop Up, Alert Tones - Epidemic Sound - 0813-1088.wav"
         )
     # Se il caricamento fallisce.
@@ -185,7 +185,7 @@ def save_high_score(score):
 # Tenta di caricare l'immagine di sfondo dal nome file semplice.
 bg = load("background.jpg")
 # Definisce il percorso completo alternativo.
-bg_full_path = files("missionone") / "background.jpg"
+bg_full_path = files("images") / "background.jpg"
 # Controlla se il percorso completo esiste.
 if os.path.exists(bg_full_path):
     # Carica l'immagine dal percorso completo.
@@ -202,7 +202,7 @@ else:
 
 # --- CARICAMENTO GIOCATORE (RAZZO) ---
 # Carica l'immagine del razzo dal percorso specificato.
-razzo = load(files("missionone") / "razzo.png")
+razzo = load(files("images") / "razzo.png")
 # Se l'immagine è stata caricata.
 if razzo:
     # Ridimensiona l'immagine a 180x180 pixel.
@@ -210,7 +210,7 @@ if razzo:
 
 # --- CARICAMENTO ICONA IMPOSTAZIONI ---
 # Carica l'icona delle impostazioni (ingranaggio).
-settings_icon = load(files("missionone") / "settings.png")
+settings_icon = load(files("images") / "settings.png")
 # Se l'icona è stata caricata.
 if settings_icon:
     # Ridimensiona l'icona a 70x70 pixel.
@@ -218,13 +218,13 @@ if settings_icon:
 
 # --- CARICAMENTO POTENZIAMENTI (BOOST) ---
 # Carica l'immagine per il boost potenza.
-boost_power_img = load(files("missionone") / "potenza.png")
+boost_power_img = load(files("images") / "potenza.png")
 # Carica l'immagine per il boost vita.
-boost_health_img = load(files("missionone") / "cuore.png")
+boost_health_img = load(files("images") / "cuore.png")
 # Carica l'immagine per il boost velocità.
-boost_speed_img = load(files("missionone") / "velocità.png")
+boost_speed_img = load(files("images") / "velocità.png")
 # Carica l'immagine per il boost invincibilità.
-boost_invincibility_img = load(files("missionone") / "invincibilità.png")
+boost_invincibility_img = load(files("images") / "invincibilità.png")
 
 # Se l'immagine boost potenza esiste, la ridimensiona.
 if boost_power_img:
@@ -241,7 +241,7 @@ if boost_invincibility_img:
 
 # --- CARICAMENTO NEMICO ---
 # Carica l'immagine del nemico.
-enemy_img = load(files("missionone") / "nemico.png")
+enemy_img = load(files("images") / "nemico.png")
 # Se caricata, la ridimensiona.
 if enemy_img:
     # Imposta le dimensioni a 60x60.
@@ -249,7 +249,7 @@ if enemy_img:
 
 # --- CARICAMENTO MISSILE ---
 # Carica l'immagine del missile.
-missile_img = load(files("missionone") / "missile.png")
+missile_img = load(files("images") / "missile.png")
 # Se caricata.
 if missile_img:
     # Ridimensiona a 50x20 pixel.
@@ -257,7 +257,7 @@ if missile_img:
 
 # --- CARICAMENTO BOSS ---
 # Definisce il percorso del file del Boss.
-boss_image_file = files("missionone") / "boss.png"
+boss_image_file = files("images") / "boss.png"
 # Carica l'immagine del Boss.
 boss_img = load(boss_image_file)
 # Se caricata.
@@ -849,7 +849,7 @@ def show_menu():
     button_settings = pygame.Rect(WIDTH - 90, 20, 70, 70)
 
     # Carica l'immagine del razzo.
-    razzo_menu = load(files("missionone") / "razzo.png")
+    razzo_menu = load(files("images") / "razzo.png")
     # Se caricata.
     if razzo_menu:
         # Scala l'immagine.

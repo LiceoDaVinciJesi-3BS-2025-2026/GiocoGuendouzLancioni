@@ -7,11 +7,15 @@ name = "missionone"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "platformdirs" },
     { name = "pygame" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pygame", specifier = ">=2.6.1" }]
+requires-dist = [
+    { name = "platformdirs", specifier = ">=3.0.0" },
+    { name = "pygame", specifier = ">=2.6.1" },
+]
 
 [[package]]
 name = "platformdirs"
