@@ -1,16 +1,17 @@
 [project]
-name = "giocoguendouzlancioni"
+name = "missionone"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "pygame>=2.6.1",
+    "platformdirs>=3.0.0",
 ]
 
 [project.scripts]
-giocoguendouzlancioni = "giocoguendouzlancioni:main"
+missionone = "missionone:main"
 
 [build-system]
-requires = ["uv_build>=0.9.26,<0.10.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

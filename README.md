@@ -1,1 +1,38 @@
-# GiocoGuendouzLancioni
+# 🚀 MissionOne
+In questo gioco devi sparare ai tuoi nemici e cercare di non venire a tua volta colpito; ma sii concentrato, potrebbero arrivare orde di proiettili o potresti avere l'occasione di prendere importanti jackpack.
+
+## indicazioni per giocare
+### *Attacca e difenditi*
+Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita diminuirà e il gioco termina.
+
+### *Diventa il migliore*
+Prova a battere il record assoluto!!!
+
+### *Sfida te stesso*
+Puoi anche scegliere il liello più adatto a te(mettiti in gioco😉)
+
+## Crediti
+
+Creatori del gioco: Elena Lancioni, Aziz Guendouz
+
+Nella realizzazione del gioco abbiamo utilizzato i software:
++ Thonny
++ Uv
+
+
+
+Inoltre abbiamo anche usato le seguenti intelligenze artificiali:
++ Claude.ai
++ Google Gemini
++ ChatGPT
++ Adobe
++ (Google)
+
+
+## Organizzazione del lavoro
+Per raliizzare il codice abbiamo lavorato in questo modo:
++ E.L ha cercato, scaricato e adattato le immagini: boss, nemico, velocità, cuore, potenza e settings tramite Google e Adobe
++ A.G ha cercato, scaricato e adattato le immagini: razzo, background e missile tramite Google e Adobe
++ A.G ha cercato e caricato nel gioco i suoni
++ 
++ A.G ha fatto le seguenti funzioni
