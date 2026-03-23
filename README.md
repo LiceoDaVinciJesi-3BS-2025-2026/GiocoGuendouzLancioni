@@ -1,4 +1,4 @@
-# 🚀MissionOne
+# 🚀 MissionOne
 In questo gioco devi sparare ai tuoi nemici e cercare di non venire a tua volta colpito; ma sii concentrato, potrebbero arrivare orde di proiettili o potresti avere l'occasione di prendere importanti jackpack.
 
 ## indicazioni per giocare
@@ -16,5 +16,11 @@ Puoi anche scegliere il liello più adatto a te(mettiti in gioco😉)
 Creatori del gioco: Elena Lancioni, Aziz Guendouz
 
 Nella realizzazione del gioco abbiamo utilizzato i software:
-*Thonny
++ Thonny
 + Uv
+
+Inoltre abbiamo anche usato le seguenti intelligenze artificiali:
++ Claude.ai
++ Google Gemini
++ ChatGPT
++ Adobe 
