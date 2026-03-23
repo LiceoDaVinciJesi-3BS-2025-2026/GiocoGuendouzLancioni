@@ -45,30 +45,30 @@ Per raliizzare il codice abbiamo lavorato in questo modo:
 + E.L ha svolto l'importazione delle librerie
   
 + A.G ha fatto le seguenti funzioni:
-  -play_music
-  -load_high_score
-  -save_high_score
-  -make_boss_missile
-  -show_menu
-  -run_game
-  -show_game_ove
+  - play_music
+  - load_high_score
+  - save_high_score
+  - make_boss_missile
+  - show_menu
+  - run_game
+  - show_game_ove
   main
   
 + E.L ha fatto le seguenti funzioni:
   load
-  -draw_player
-  -update_player
-  -draw_enemy
-  -draw_boss
-  -draw_boost
-  -draw_hud
-  -make_player
-  -make_bullet
-  -make_enemy
-  -make_enemy_bullet
-  -make_missile
-  -make_boss
-  -make_boss_missile
+  - draw_player
+  - update_player
+  - draw_enemy
+  - draw_boss
+  - draw_boost
+  - draw_hud
+  - make_player
+  - make_bullet
+  - make_enemy
+  - make_enemy_bullet
+  - make_missile
+  - make_boss
+  - make_boss_missile
   
 + A.G e E.L hanno collaborato per le righe di codice riguardanti il tempo
 
