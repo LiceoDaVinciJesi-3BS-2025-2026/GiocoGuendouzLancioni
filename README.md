@@ -2,14 +2,22 @@
 In questo gioco devi sparare ai tuoi nemici e cercare di non venire a tua volta colpito; ma sii concentrato, potrebbero arrivare orde di proiettili o potresti avere l'occasione di prendere importanti jackpack.
 
 ## indicazioni per giocare
+<img width="987" height="737" alt="Screenshot 2026-03-23 214542" src="https://github.com/user-attachments/assets/65d1d30f-6afe-4787-b463-88b25e2f83ba" />
+
+
 ### *Attacca e difenditi*
 <img width="700" height="500" alt="Screenshot 2026-03-23 214657" src="https://github.com/user-attachments/assets/7dbd43d7-eaf1-40ca-ae5c-b3b01951de0c" />
+
 Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita diminuirà e il gioco termina.
 
 ### *Diventa il migliore*
+<img width="600" height="400" alt="Screenshot 2026-03-23 214542" src="https://github.com/user-attachments/assets/8810e876-9e71-407c-82b1-640281f44e79" />
+
 Prova a battere il record assoluto!!!
 
 ### *Sfida te stesso*
+<img width="600" height="400" alt="Screenshot 2026-03-23 214609" src="https://github.com/user-attachments/assets/135d6585-488c-4a57-8561-ea85788f1f5c" />
+
 Puoi anche scegliere il liello più adatto a te(mettiti in gioco😉)
 
 ## Crediti
