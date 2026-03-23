@@ -8,10 +8,7 @@ Entra subito nella schermata iniziale
 <p align="center">
   <img width="600" height="400" alt="Screenshot 2026-03-23 214542" src="https://github.com/user-attachments/assets/65d1d30f-6afe-4787-b463-88b25e2f83ba" />
 </p>
-
-
-
-
+<br>
 ### *Attacca e difenditi*
 
 Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita diminuirà e il gioco termina.
@@ -20,7 +17,7 @@ Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita d
   <img width="600" height="400" alt="Screenshot 2026-03-23 214657" src="https://github.com/user-attachments/assets/7dbd43d7-eaf1-40ca-ae5c-b3b01951de0c" />
 </p>
 
-
+<br>
 ### *Diventa il migliore*
 
 Prova a battere il record assoluto!!!
@@ -29,7 +26,7 @@ Prova a battere il record assoluto!!!
   <img width="600" height="400" alt="Screenshot 2026-03-23 214542" src="https://github.com/user-attachments/assets/8810e876-9e71-407c-82b1-640281f44e79" />
 </p>
 
-
+<br>
 ### *Sfida te stesso*
 
 Puoi anche scegliere il liello più adatto a te(mettiti in gioco😉)
