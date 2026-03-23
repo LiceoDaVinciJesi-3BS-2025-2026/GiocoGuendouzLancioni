@@ -10,3 +10,11 @@ Prova a battere il record assoluto!!!
 
 ### *Sfida te stesso*
 Puoi anche scegliere il liello più adatto a te(mettiti in gioco😉)
+
+## Crediti
+
+Creatori del gioco: Elena Lancioni, Aziz Guendouz
+
+Nella realizzazione del gioco abbiamo utilizzato i software:
+*Thonny
++ Uv
