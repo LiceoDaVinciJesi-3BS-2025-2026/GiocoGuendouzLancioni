@@ -10,6 +10,8 @@ Entra subito nella schermata iniziale
 </p>
 
 
+
+
 ### *Attacca e difenditi*
 
 Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita diminuirà e il gioco termina.
