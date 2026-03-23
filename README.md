@@ -25,8 +25,14 @@ Inoltre abbiamo anche usato le seguenti intelligenze artificiali:
 + Claude.ai
 + Google Gemini
 + ChatGPT
-+ Adobe 
++ Adobe
++ (Google)
 
 
 ## Organizzazione del lavoro
 Per raliizzare il codice abbiamo lavorato in questo modo:
++ E.L ha cercato, scaricato e adattato le immagini: boss, nemico, velocità, cuore, potenza e settings tramite Google e Adobe
++ A.G ha cercato, scaricato e adattato le immagini: razzo, background e missile tramite Google e Adobe
++ A.G ha cercato e caricato nel gioco i suoni
++ 
++ A.G ha fatto le seguenti funzioni
