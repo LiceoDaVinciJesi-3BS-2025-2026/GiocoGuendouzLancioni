@@ -19,8 +19,14 @@ Nella realizzazione del gioco abbiamo utilizzato i software:
 + Thonny
 + Uv
 
+
+
 Inoltre abbiamo anche usato le seguenti intelligenze artificiali:
 + Claude.ai
 + Google Gemini
 + ChatGPT
 + Adobe 
+
+
+## Organizzazione del lavoro
+Per raliizzare il codice abbiamo lavorato in questo modo:
