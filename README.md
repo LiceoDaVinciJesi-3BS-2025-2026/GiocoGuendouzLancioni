@@ -5,3 +5,5 @@ In questo gioco devi sparare ai tuoi nemici e cercare di non venire a tua volta 
 Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita diminuirà e il gioco termina.
 
 Prova a battere il reecord assoluto!!!
+
+Puoi anche scegliere il liello più adatto a te(mettiti in gioco😉)
