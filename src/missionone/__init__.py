@@ -7,6 +7,7 @@ import sys
 from importlib.resources import files
 
 import pygame
+from platformdirs import PlatformDirs
 
 from .resources import get_image, get_sound
 
