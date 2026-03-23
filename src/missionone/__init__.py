@@ -4,7 +4,7 @@
 # Elena lancioni
 # Aziz Guendouz
 
-SEZIONE 1: IMPORTAZIONE DELLE LIBRERIE ─────────────
+# ───────────── SEZIONE 1: IMPORTAZIONE DELLE LIBRERIE ─────────────
 
 import math
 import os
