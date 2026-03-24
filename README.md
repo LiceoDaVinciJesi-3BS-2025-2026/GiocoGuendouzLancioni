@@ -20,7 +20,7 @@ Cerca di sparare al nemico e di sfuggire dai suoi colpi altrimenti la tua vita d
 
 ### *Diventa il migliore*
 
-Prova a battere il record assoluto!!!
+Prova a battere il tuo record personale!!!
 
 <p align="center">
   <img width="600" height="400" alt="Screenshot 2026-03-23 214542" src="https://github.com/user-attachments/assets/8810e876-9e71-407c-82b1-640281f44e79" />
@@ -52,6 +52,7 @@ Inoltre abbiamo anche usato le seguenti intelligenze artificiali:
 + ChatGPT
 + Adobe
 + PixaBay
++ Remove.bg
 
 
 ## Organizzazione del lavoro
@@ -59,7 +60,7 @@ Per raliizzare il codice abbiamo lavorato in questo modo:
 
 + E.L ha cercato, scaricato e adattato le immagini: boss, nemico, velocità, cuore, potenza e settings tramite Google e Adobe
   
-+ A.G ha cercato, scaricato e adattato le immagini: razzo, background e missile tramite Google e Adobe
++ A.G ha cercato, scaricato e adattato le immagini: razzo, background e missile tramite Google, Adobe e Remove.bg
   
 + E.L ha creato la cartella con le immagini
   
