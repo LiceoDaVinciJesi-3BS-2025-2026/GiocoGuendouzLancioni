@@ -21,7 +21,7 @@ import pygame
 from platformdirs import PlatformDirs
 
 # Importa le funzioni helper per trovare i percorsi di immagini e suoni.
-from .resources import get_image, get_sound
+from missionone.resources import get_image, get_sound
 
 # ───────────── SEZIONE 2: INIZIALIZZAZIONE DI PYGAME ─────────────
 
