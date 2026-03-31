@@ -1,1630 +1,1449 @@
 # License: See LICENSE file in the project root for details.
 
-# Authors: 
-# Elena lancioni
+# Authors:
+# Elena Lancioni
 # Aziz Guendouz
 
 # ───────────── SEZIONE 1: IMPORTAZIONE DELLE LIBRERIE ─────────────
 
+# Importa il modulo math per calcoli trigonometrici e vettoriali.
 import math
+# Importa il modulo os per verificare l'esistenza dei file sul disco.
 import os
+# Importa il modulo random per generare valori casuali.
 import random
+# Importa il modulo sys per uscire dal programma in modo pulito.
 import sys
-from importlib.resources import files
 
+# Importa pygame, la libreria principale per la grafica e il gioco.
 import pygame
+# Importa PlatformDirs per trovare la cartella dati utente corretta per ogni sistema operativo.
 from platformdirs import PlatformDirs
 
+# Importa le funzioni helper per trovare i percorsi di immagini e suoni.
 from .resources import get_image, get_sound
 
 # ───────────── SEZIONE 2: INIZIALIZZAZIONE DI PYGAME ─────────────
-# Inizializza tutti i moduli di pygame necessari.
+
+# Inizializza tutti i moduli di pygame necessari per il funzionamento del gioco.
 pygame.init()
-# Inizializza il modulo specifico per l'audio.
+# Inizializza il sottosistema audio di pygame per la riproduzione di musica e suoni.
 pygame.mixer.init()
 
 # ───────────── SEZIONE 3: COSTANTI GLOBALI (CONFIGURAZIONE) ─────────────
-# Imposta la larghezza della finestra di gioco a 800 pixel.
+
+# Imposta la larghezza della finestra di gioco in pixel.
 WIDTH = 800
-# Imposta l'altezza della finestra di gioco a 600 pixel.
+# Imposta l'altezza della finestra di gioco in pixel.
 HEIGHT = 600
-# Crea una tupla che contiene le dimensioni della finestra.
+# Raccoglie larghezza e altezza in una tupla usata da pygame.
 DIMENSIONS = (WIDTH, HEIGHT)
-# Crea la finestra di gioco visualizzabile con le dimensioni definite.
+# Crea la finestra di gioco con le dimensioni definite e la rende visibile.
 screen = pygame.display.set_mode(DIMENSIONS)
-# Imposta il titolo che appare sulla barra della finestra.
+# Imposta il titolo visualizzato sulla barra del titolo della finestra.
 pygame.display.set_caption("MissionOne - Boss Edition")
 
 # ───────────── SEZIONE 4: DEFINIZIONE DEI COLORI ─────────────
-# Definisce il colore Bianco con i valori RGB massimi.
+
+# Colore bianco puro, usato per testi e bordi neutri.
 WHITE = (255, 255, 255)
-# Definisce il colore Nero con i valori RGB minimi.
+# Colore nero puro, usato per sfondi e ombre.
 BLACK = (0, 0, 0)
-# Definisce il colore Giallo.
+# Colore giallo brillante, usato per punteggi e proiettili.
 YELLOW = (255, 220, 0)
-# Definisce il colore Grigio scuro.
+# Colore grigio scuro, usato come sfondo alternativo quando manca l'immagine.
 GRAY = (40, 40, 40)
-# Definisce il colore Blu.
+# Colore blu medio, usato come fallback per il giocatore.
 BLUE = (70, 130, 220)
-# Definisce il colore Verde.
+# Colore verde chiaro, usato per le barre della vita piena.
 GREEN = (100, 200, 100)
-# Definisce il colore Rosso.
+# Colore rosso medio, usato per i danni e i nemici.
 RED = (220, 80, 80)
-# Definisce il colore Ciano (azzurro).
+# Colore ciano brillante, usato per l'effetto invincibilità.
 CYAN = (0, 220, 220)
-# Definisce il colore Viola.
+# Colore viola profondo, usato per il boss e i bottoni attivi.
 PURPLE = (150, 50, 200)
-# Definisce il colore Rosa.
+# Colore rosa vivace, usato per il titolo del gioco.
 PINK = (255, 100, 180)
-# Definisce il colore Lilla.
+# Colore lilla tenue, usato per i punteggi nella schermata game over.
 LILAC = (200, 150, 255)
 
 # ───────────── SEZIONE 5: IMPOSTAZIONI DI GIOCO ─────────────
-# Crea il dizionario per le impostazioni.
+
+# Crea il dizionario che raccoglie le impostazioni modificabili dall'utente.
 settings = {
-    # Imposta il volume iniziale al 50%.
+    # Volume iniziale impostato al 50%.
     "volume": 50,
-    # Imposta la difficoltà iniziale su 'base'.
+    # Difficoltà iniziale impostata su 'base'.
     "difficulty": "base",
 }
 
-# Variabile globale per memorizzare il punteggio più alto.
+# Variabile globale che memorizza il punteggio più alto raggiunto.
 HIGH_SCORE = 0
 
-# ───────────── SEZIONE 6: GESTIONE AUDIO (MUSICA) ─────────────
-# Stringa con il percorso completo del file musicale del menu.
-MENU_MUSIC_FILE = files("sounds") / "the_mountain-space-133254.mp3"
-# Stringa con il percorso completo del file musicale di gioco.
-GAME_MUSIC_FILE = (
-    files("sounds") / "momotmusic-speed-of-light-447363.mp3"
-)
-# Variabile globale per il suono del click, inizialmente nulla.
+# ───────────── SEZIONE 6: GESTIONE AUDIO ─────────────
+
+# Percorso completo del file musicale del menu principale.
+MENU_MUSIC_FILE = get_sound("musica_home.mp3")
+# Percorso completo del file musicale durante la partita.
+GAME_MUSIC_FILE = get_sound("musica_gioco.mp3")
+
+# Variabile per il suono del click, inizializzata a None finché non viene caricata.
 click_sound = None
 
 
-# Definisce la funzione per avviare la musica.
+# Funzione helper che avvia la riproduzione di un file audio in loop opzionale.
 def play_music(filename, loop=True):
-    # Controlla se il file musicale esiste sul disco.
+    # Verifica se il file esiste sul disco prima di tentare di caricarlo.
     if os.path.exists(filename):
-        # Inizia un blocco try per gestire eventuali errori.
+        # Blocco try per intercettare errori pygame durante il caricamento audio.
         try:
-            # Carica il file musicale nella memoria.
+            # Carica il file musicale nel mixer di pygame.
             pygame.mixer.music.load(filename)
-            # Imposta il volume basandosi sulle impostazioni salvate.
+            # Imposta il volume del mixer usando il valore percentuale nelle impostazioni.
             pygame.mixer.music.set_volume(settings["volume"] / 100.0)
-            # Avvia la riproduzione della musica.
+            # Avvia la riproduzione: -1 indica loop infinito, 0 indica riproduzione singola.
             pygame.mixer.music.play(-1 if loop else 0)
-        # Cattura eventuali errori di pygame.
+        # Cattura qualsiasi errore specifico di pygame durante la riproduzione.
         except pygame.error as e:
-            # Stampa un messaggio di errore nella console.
+            # Stampa un messaggio diagnostico nella console per aiutare il debug.
             print(f"Errore audio con {filename}: {e}")
-    # Se il file non viene trovato.
+    # Se il file non esiste, avvisa lo sviluppatore senza crashare il programma.
     else:
-        # Stampa un messaggio di avviso.
+        # Messaggio di avviso stampato nella console.
         print(f"File musicale non trovato: {filename}")
 
 
 # ───────────── SEZIONE 7: CARICAMENTO RISORSE GRAFICHE ─────────────
-# Definisce la funzione helper per caricare le immagini.
+
+# Funzione helper che carica un'immagine dal disco gestendo eventuali errori.
 def load(path):
-    # Controlla se il percorso del file esiste.
+    # Controlla se il percorso indicato esiste effettivamente sul filesystem.
     if os.path.exists(path):
-        # Prova a eseguire il caricamento.
+        # Blocco try per gestire errori di formato immagine non supportato.
         try:
-            # Carica l'immagine e applica la trasparenza alpha.
+            # Carica l'immagine e converte il canale alpha per prestazioni ottimali.
             return pygame.image.load(path).convert_alpha()
-        # Se si verifica un errore durante il caricamento.
+        # Se pygame non riesce a leggere il file, restituisce None silenziosamente.
         except pygame.error:
-            # Restituisce None per indicare il fallimento.
+            # Ritorna None per segnalare il fallimento del caricamento.
             return None
-    # Se il percorso non esiste.
+    # Se il percorso non esiste, ritorna None senza lanciare eccezioni.
     return None
 
 
-# --- CARICAMENTO SUONO CLICK ---
-# Controlla se il file del suono del click esiste.
-if os.path.exists(
-    # PROF: nome ASSURDO per un file da caricare...
-    files("sounds")
-    / "ES_User Interface, Click, Pop Up, Alert Tones - Epidemic Sound - 0813-1088.wav"
-):
-    # Prova a caricare il suono.
+# Percorso del file audio per il suono del click sui bottoni.
+click_sound_path = get_sound("click_sound.wav")
+# Verifica se il file del suono click esiste prima di tentare il caricamento.
+if os.path.exists(click_sound_path):
+    # Blocco try per gestire errori nel caricamento dell'effetto sonoro.
     try:
-        # Assegna il suono caricato alla variabile globale.
-        click_sound = pygame.mixer.Sound(
-            files("sounds")
-            / "ES_User Interface, Click, Pop Up, Alert Tones - Epidemic Sound - 0813-1088.wav"
-        )
-    # Se il caricamento fallisce.
+        # Carica il suono come oggetto Sound di pygame per la riproduzione immediata.
+        click_sound = pygame.mixer.Sound(click_sound_path)
+    # Se il caricamento fallisce per qualsiasi motivo, mantiene click_sound a None.
     except:
-        # Mantiene la variabile su None.
+        # Assegna None per indicare che il suono non è disponibile.
         click_sound = None
 
+# ───────────── SEZIONE 8: GESTIONE HIGHSCORE SU DISCO ─────────────
 
-# --- FUNZIONI SALVATAGGIO RECORD ---
-# Definisce la funzione per caricare il record.
+# Usa PlatformDirs per trovare la cartella dati utente appropriata al sistema operativo corrente.
+_dirs = PlatformDirs("missionone", "missionone")
+# Estrae il percorso della directory dati come oggetto Path di pathlib.
+_data_dir = _dirs.user_data_path
+# Crea la directory ricorsivamente se non esiste ancora, senza errori se già presente.
+_data_dir.mkdir(parents=True, exist_ok=True)
+# Costruisce il percorso completo del file di testo che contiene il record.
+HIGHSCORE_FILE = _data_dir / "highscore.txt"
+
+
+# Funzione che legge il record salvato dal file e aggiorna la variabile globale.
 def load_high_score():
-    # Dichiara l'uso della variabile globale HIGH_SCORE.
+    # Dichiara l'uso della variabile globale per poterla modificare dall'interno.
     global HIGH_SCORE
-    # Prova ad aprire il file di testo.
+    # Blocco try per gestire il caso in cui il file non esiste ancora.
     try:
-        # Apre il file in modalità lettura.
-        # PROF: sistema con platformdirs
-        with open("highscore.txt", "r") as f:
-            # Legge tutto il contenuto del file.
+        # Apre il file in modalità lettura testuale.
+        with open(HIGHSCORE_FILE, "r") as f:
+            # Legge l'intero contenuto del file come stringa.
             content = f.read()
-            # Controlla se il contenuto è composto solo da cifre.
+            # Verifica che il contenuto sia un numero intero valido.
             if content.isdigit():
-                # Converte la stringa in un numero intero.
+                # Converte la stringa in intero e la assegna alla variabile globale.
                 HIGH_SCORE = int(content)
-            # Se il contenuto non è un numero valido.
+            # Se il contenuto non è un numero puro, resetta il record a zero.
             else:
-                # Imposta il record a 0.
+                # Imposta il record a zero come valore di default sicuro.
                 HIGH_SCORE = 0
-    # Se il file non esiste o c'è un errore di valore.
+    # Gestisce sia il file mancante che valori non convertibili.
     except (FileNotFoundError, ValueError):
-        # Imposta il record a 0 di default.
+        # In caso di errore, il record vale zero.
         HIGH_SCORE = 0
 
 
-# Definisce la funzione per salvare il nuovo record.
+# Funzione che salva il punteggio corrente se supera il record esistente.
 def save_high_score(score):
-    # Dichiara l'uso della variabile globale.
+    # Dichiara l'uso della variabile globale per aggiornarla.
     global HIGH_SCORE
-    # Verifica se il punteggio attuale supera il record.
+    # Aggiorna solo se il punteggio attuale è strettamente maggiore del record.
     if score > HIGH_SCORE:
-        # Aggiorna la variabile globale con il nuovo punteggio.
+        # Aggiorna la variabile in memoria con il nuovo valore massimo.
         HIGH_SCORE = score
-        # Prova a scrivere su file.
+        # Blocco try per gestire errori di scrittura su disco (permessi, spazio).
         try:
-            # Apre il file in modalità scrittura (sovrascrive).
-            with open("highscore.txt", "w") as f:
-                # Scrive il nuovo record nel file.
+            # Apre il file in scrittura, sovrascrivendo il contenuto precedente.
+            with open(HIGHSCORE_FILE, "w") as f:
+                # Scrive il nuovo record come stringa nel file.
                 f.write(str(score))
-        # Se si verifica un errore durante il salvataggio.
+        # Cattura qualsiasi errore di I/O durante la scrittura.
         except Exception as e:
-            # Stampa l'errore nella console.
+            # Stampa il dettaglio dell'errore per facilitare il debug.
             print(f"Errore durante il salvataggio del record: {e}")
 
 
-# --- CARICAMENTO SFONDO ---
-# Tenta di caricare l'immagine di sfondo dal nome file semplice.
-bg = load("background.jpg")
-# Definisce il percorso completo alternativo.
-bg_full_path = files("images") / "background.jpg"
-# Controlla se il percorso completo esiste.
-if os.path.exists(bg_full_path):
-    # Carica l'immagine dal percorso completo.
-    bg = load(bg_full_path)
+# ───────────── SEZIONE 9: CARICAMENTO ASSET GRAFICI ─────────────
 
-# Se l'immagine è stata caricata con successo.
+# Tenta di caricare l'immagine di sfondo tramite il resolver di risorse.
+bg_full_path = get_image("background.jpg")
+# Carica l'immagine dal percorso risolto usando la funzione helper.
+bg = load(bg_full_path)
+# Se il caricamento è avvenuto con successo, scala l'immagine alle dimensioni della finestra.
 if bg:
-    # Ridimensiona l'immagine per adattarla alla finestra.
+    # Scala lo sfondo per coprire esattamente l'intera finestra di gioco.
     background = pygame.transform.scale(bg, (WIDTH, HEIGHT))
-# Se l'immagine non è stata trovata.
+# Se l'immagine non è disponibile, usa None come indicatore di assenza.
 else:
-    # Imposta lo sfondo su None.
+    # Imposta background a None per usare il colore di fallback durante il disegno.
     background = None
 
-# --- CARICAMENTO GIOCATORE (RAZZO) ---
-# Carica l'immagine del razzo dal percorso specificato.
-razzo = load(files("images") / "razzo.png")
-# Se l'immagine è stata caricata.
+# Carica l'immagine del razzo del giocatore.
+razzo = load(get_image("razzo.png"))
+# Se caricata, scala il razzo alla dimensione desiderata per il giocatore.
 if razzo:
-    # Ridimensiona l'immagine a 180x180 pixel.
+    # Imposta il razzo a 180x180 pixel.
     razzo = pygame.transform.scale(razzo, (180, 180))
 
-# --- CARICAMENTO ICONA IMPOSTAZIONI ---
-# Carica l'icona delle impostazioni (ingranaggio).
-settings_icon = load(files("images") / "settings.png")
-# Se l'icona è stata caricata.
+# Carica l'icona dell'ingranaggio per le impostazioni.
+settings_icon = load(get_image("settings.png"))
+# Se caricata, scala l'icona alle dimensioni del bottone impostazioni.
 if settings_icon:
-    # Ridimensiona l'icona a 70x70 pixel.
+    # Imposta l'icona a 70x70 pixel.
     settings_icon = pygame.transform.scale(settings_icon, (70, 70))
 
-# --- CARICAMENTO POTENZIAMENTI (BOOST) ---
-# Carica l'immagine per il boost potenza.
-boost_power_img = load(files("images") / "potenza.png")
-# Carica l'immagine per il boost vita.
-boost_health_img = load(files("images") / "cuore.png")
-# Carica l'immagine per il boost velocità.
-boost_speed_img = load(files("images") / "velocità.png")
-# Carica l'immagine per il boost invincibilità.
-boost_invincibility_img = load(files("images") / "invincibilità.png")
+# Carica le quattro immagini per i power-up collezionabili.
+boost_power_img = load(get_image("potenza.png"))
+# Immagine del cuore per il power-up vita.
+boost_health_img = load(get_image("cuore.png"))
+# Immagine del fulmine per il power-up velocità.
+boost_speed_img = load(get_image("velocità.png"))
+# Immagine dello scudo per il power-up invincibilità.
+boost_invincibility_img = load(get_image("invincibilità.png"))
 
-# Se l'immagine boost potenza esiste, la ridimensiona.
+# Scala l'immagine del boost potenza se disponibile.
 if boost_power_img:
     boost_power_img = pygame.transform.scale(boost_power_img, (50, 50))
-# Se l'immagine boost vita esiste, la ridimensiona.
+# Scala l'immagine del boost vita se disponibile.
 if boost_health_img:
     boost_health_img = pygame.transform.scale(boost_health_img, (50, 50))
-# Se l'immagine boost velocità esiste, la ridimensiona.
+# Scala l'immagine del boost velocità se disponibile.
 if boost_speed_img:
     boost_speed_img = pygame.transform.scale(boost_speed_img, (50, 50))
-# Se l'immagine boost invincibilità esiste, la ridimensiona.
+# Scala l'immagine del boost invincibilità se disponibile.
 if boost_invincibility_img:
     boost_invincibility_img = pygame.transform.scale(boost_invincibility_img, (50, 50))
 
-# --- CARICAMENTO NEMICO ---
-# Carica l'immagine del nemico.
-enemy_img = load(files("images") / "nemico.png")
-# Se caricata, la ridimensiona.
+# Carica l'immagine del nemico base.
+enemy_img = load(get_image("nemico.png"))
+# Scala il nemico se caricato correttamente.
 if enemy_img:
-    # Imposta le dimensioni a 60x60.
+    # Imposta il nemico a 60x60 pixel.
     enemy_img = pygame.transform.scale(enemy_img, (60, 60))
 
-# --- CARICAMENTO MISSILE ---
-# Carica l'immagine del missile.
-missile_img = load(files("images") / "missile.png")
-# Se caricata.
+# Carica l'immagine del missile nemico.
+missile_img = load(get_image("missile.png"))
+# Scala il missile se caricato correttamente.
 if missile_img:
-    # Ridimensiona a 50x20 pixel.
+    # Imposta il missile a 50x20 pixel.
     missile_img = pygame.transform.scale(missile_img, (50, 20))
 
-# --- CARICAMENTO BOSS ---
-# Definisce il percorso del file del Boss.
-boss_image_file = files("images") / "boss.png"
-# Carica l'immagine del Boss.
-boss_img = load(boss_image_file)
-# Se caricata.
+# Carica l'immagine del Boss finale.
+boss_img = load(get_image("boss.png"))
+# Scala il boss se caricato correttamente.
 if boss_img:
-    # Ridimensiona a 150x150 pixel.
+    # Imposta il boss a 150x150 pixel.
     boss_img = pygame.transform.scale(boss_img, (150, 150))
 
-
-# ───────────── SEZIONE 8: COSTRUTTORI OGGETTI (DIZIONARI) ─────────────
-# Definisce la funzione per creare il dizionario del giocatore.
-def make_player():
-    # Imposta la velocità base in base alla difficoltà.
-    base_speed = 5 if settings["difficulty"] == "base" else 7
-    # Crea il dizionario vuoto per il giocatore.
-    player_data = {}
-    # Imposta la posizione iniziale X.
-    player_data["x"] = 100
-    # Imposta la posizione iniziale Y centrata.
-    player_data["y"] = HEIGHT // 2
-    # Imposta la larghezza del rettangolo.
-    player_data["width"] = 180
-    # Imposta l'altezza del rettangolo.
-    player_data["height"] = 180
-    # Imposta la velocità base.
-    player_data["base_speed"] = base_speed
-    # Imposta la velocità attuale.
-    player_data["speed"] = base_speed
-    # Imposta la vita iniziale.
-    player_data["health"] = 100
-    # Imposta la vita massima.
-    player_data["max_health"] = 100
-    # Imposta la potenza di fuoco iniziale.
-    player_data["power"] = 1
-    # Imposta il rateo di fuoco iniziale.
-    player_data["fire_rate"] = 300
-    # Imposta il tempo dell'ultimo sparo a zero.
-    player_data["last_shot"] = 0
-    # Imposta il tempo di fine effetto potenza.
-    player_data["power_end_time"] = 0
-    # Imposta il tempo di fine effetto velocità.
-    player_data["speed_end_time"] = 0
-    # Imposta il tempo di fine invincibilità.
-    player_data["invincibility_end_time"] = 0
-    # Ritorna il dizionario completo.
-    return player_data
+# ───────────── SEZIONE 10: FUNZIONI DI DISEGNO ─────────────
 
 
-# Definisce la funzione per creare un proiettile.
-def make_bullet(x, y, power):
-    # Crea il dizionario del proiettile.
-    bullet_data = {}
-    # Imposta la coordinata X.
-    bullet_data["x"] = x
-    # Imposta la coordinata Y.
-    bullet_data["y"] = y
-    # Imposta la larghezza in base alla potenza.
-    bullet_data["width"] = 15 * power
-    # Imposta l'altezza.
-    bullet_data["height"] = 8
-    # Imposta la velocità.
-    bullet_data["speed"] = 12
-    # Imposta la potenza.
-    bullet_data["power"] = power
-    # Ritorna il dizionario.
-    return bullet_data
-
-
-# Definisce la funzione per creare un nemico.
-def make_enemy():
-    # Crea il dizionario del nemico.
-    enemy_data = {}
-    # Imposta la posizione X casuale fuori schermo.
-    enemy_data["x"] = WIDTH + random.randint(0, 100)
-    # Imposta la posizione Y casuale.
-    enemy_data["y"] = random.randint(50, HEIGHT - 110)
-    # Imposta la larghezza.
-    enemy_data["width"] = 60
-    # Imposta l'altezza.
-    enemy_data["height"] = 60
-    # Imposta la velocità in base alla difficoltà.
-    enemy_data["speed"] = 3 if settings["difficulty"] == "base" else 5
-    # Imposta il timer dell'ultimo sparo.
-    enemy_data["last_shot"] = pygame.time.get_ticks()
-    # Imposta il ritardo di sparo casuale.
-    enemy_data["shoot_delay"] = random.randint(1000, 2500)
-    # Imposta la vita.
-    enemy_data["health"] = 100
-    # Imposta la vita massima.
-    enemy_data["max_health"] = 100
-    # Ritorna il dizionario.
-    return enemy_data
-
-
-# Definisce la funzione per creare un proiettile nemico.
-def make_enemy_bullet(x, y):
-    # Crea il dizionario.
-    bullet_data = {}
-    # Imposta X.
-    bullet_data["x"] = x
-    # Imposta Y.
-    bullet_data["y"] = y
-    # Imposta larghezza.
-    bullet_data["width"] = 10
-    # Imposta altezza.
-    bullet_data["height"] = 10
-    # Imposta velocità.
-    bullet_data["speed"] = 7
-    # Ritorna il dizionario.
-    return bullet_data
-
-
-# Definisce la funzione per creare un missile.
-def make_missile():
-    # Crea il dizionario.
-    missile_data = {}
-    # Imposta X casuale.
-    missile_data["x"] = WIDTH + random.randint(0, 100)
-    # Imposta Y casuale.
-    missile_data["y"] = random.randint(50, HEIGHT - 100)
-    # Imposta larghezza visiva.
-    missile_data["width"] = 50
-    # Imposta altezza visiva.
-    missile_data["height"] = 20
-    # Imposta velocità in base alla difficoltà.
-    missile_data["speed"] = 4 if settings["difficulty"] == "base" else 6
-    # Ritorna il dizionario.
-    return missile_data
-
-
-# Definisce la funzione per creare un boost.
-def make_boost(boost_type):
-    # Crea il dizionario.
-    boost_data = {}
-    # Imposta X.
-    boost_data["x"] = WIDTH + random.randint(0, 100)
-    # Imposta Y.
-    boost_data["y"] = random.randint(100, HEIGHT - 150)
-    # Imposta larghezza.
-    boost_data["width"] = 50
-    # Imposta altezza.
-    boost_data["height"] = 50
-    # Imposta velocità.
-    boost_data["speed"] = 3
-    # Imposta il tipo passato come argomento.
-    boost_data["type"] = boost_type
-    # Ritorna il dizionario.
-    return boost_data
-
-
-# Definisce la funzione per creare il Boss.
-def make_boss(wave_number):
-    # Imposta la larghezza.
-    w = 150
-    # Imposta l'altezza.
-    h = 150
-    # Definisce la vita base.
-    base_hp = 1000
-    # Calcola il bonus vita per ondata.
-    hp_bonus = (wave_number - 1) * 400
-    # Calcola il danno.
-    damage = 15 + (wave_number - 1) * 3
-    # Calcola la velocità missili.
-    missile_speed = 5.0 + (wave_number - 1) * 0.5
-    # Calcola il ritardo di sparo.
-    shoot_delay = max(400, 900 - (wave_number * 100))
-    # Crea il dizionario.
-    boss_data = {}
-    # Imposta X iniziale.
-    boss_data["x"] = WIDTH + 50
-    # Imposta Y centrata.
-    boss_data["y"] = HEIGHT // 2 - h // 2
-    # Imposta larghezza.
-    boss_data["width"] = w
-    # Imposta altezza.
-    boss_data["height"] = h
-    # Imposta velocità movimento.
-    boss_data["speed"] = 2
-    # Imposta vita totale.
-    boss_data["health"] = base_hp + hp_bonus
-    # Imposta vita massima.
-    boss_data["max_health"] = base_hp + hp_bonus
-    # Imposta danno.
-    boss_data["damage"] = damage
-    # Imposta velocità missili.
-    boss_data["missile_speed"] = missile_speed
-    # Imposta timer sparo.
-    boss_data["last_shot"] = pygame.time.get_ticks()
-    # Imposta ritardo.
-    boss_data["shoot_delay"] = shoot_delay
-    # Imposta direzione.
-    boss_data["direction"] = 1
-    # Imposta flag di entrata.
-    boss_data["entering"] = True
-    # Ritorna il dizionario.
-    return boss_data
-
-
-# Definisce la funzione per creare un missile del Boss.
-def make_boss_missile(x, y, player_rect, speed, damage):
-    # Prende il centro X del giocatore.
-    tx = player_rect.centerx
-    # Prende il centro Y del giocatore.
-    ty = player_rect.centery
-    # Calcola differenza X.
-    dx = tx - x
-    # Calcola differenza Y.
-    dy = ty - y
-    # Calcola distanza ipotenusa.
-    dist = math.hypot(dx, dy)
-    # Se la distanza non è zero.
-    if dist != 0:
-        # Normalizza il vettore X.
-        dx = dx / dist
-        # Normalizza il vettore Y.
-        dy = dy / dist
-    # Se la distanza è zero.
-    else:
-        # Imposta direzione default X.
-        dx = -1
-        # Imposta direzione default Y.
-        dy = 0
-    # Crea il dizionario.
-    missile_data = {}
-    # Imposta X.
-    missile_data["x"] = x
-    # Imposta Y.
-    missile_data["y"] = y
-    # Imposta larghezza.
-    missile_data["width"] = 30
-    # Imposta altezza.
-    missile_data["height"] = 15
-    # Imposta direzione X normalizzata.
-    missile_data["dx"] = dx
-    # Imposta direzione Y normalizzata.
-    missile_data["dy"] = dy
-    # Imposta velocità.
-    missile_data["speed"] = speed
-    # Imposta danno.
-    missile_data["damage"] = damage
-    # Ritorna il dizionario.
-    return missile_data
-
-
-# ───────────── SEZIONE 9: FUNZIONI DI LOGICA (AGGIORNAMENTO) ─────────────
-
-
-# Funzione per aggiornare il giocatore.
-def update_player(p, keys, current_time):
-    # Controlla se il tasto SU è premuto.
-    if keys[pygame.K_UP]:
-        # Controlla se il giocatore è dentro il bordo.
-        if p["y"] > 0:
-            # Muove il giocatore in alto.
-            p["y"] -= p["speed"]
-    # Controlla se il tasto GIU è premuto.
-    if keys[pygame.K_DOWN]:
-        # Controlla il bordo inferiore.
-        if p["y"] < HEIGHT - p["height"]:
-            # Muove il giocatore in basso.
-            p["y"] += p["speed"]
-    # Controlla se il tasto SINISTRA è premuto.
-    if keys[pygame.K_LEFT]:
-        # Controlla il bordo sinistro.
-        if p["x"] > 0:
-            # Muove a sinistra.
-            p["x"] -= p["speed"]
-    # Controlla se il tasto DESTRA è premuto.
-    if keys[pygame.K_RIGHT]:
-        # Controlla il bordo destro.
-        if p["x"] < WIDTH - p["width"]:
-            # Muove a destra.
-            p["x"] += p["speed"]
-
-    # Controlla se il buff velocità è attivo.
-    if current_time < p["speed_end_time"]:
-        # Aumenta la velocità.
-        p["speed"] = p["base_speed"] + 3
-        # Aumenta il rateo di fuoco.
-        p["fire_rate"] = 100
-    # Se il buff è finito.
-    else:
-        # Resetta la velocità.
-        p["speed"] = p["base_speed"]
-        # Resetta il rateo.
-        p["fire_rate"] = 300
-
-    # Controlla se il buff potenza è attivo.
-    if current_time < p["power_end_time"]:
-        # Imposta potenza a 3.
-        p["power"] = 3
-    # Se il buff è finito.
-    else:
-        # Resetta potenza a 1.
-        p["power"] = 1
-
-
-# Funzione per verificare l'invincibilità.
-def is_invincible(p, current_time):
-    # Ritorna True se il tempo attuale è minore del tempo di fine.
-    result = current_time < p["invincibility_end_time"]
-    # Ritorna il risultato.
-    return result
-
-
-# Funzione per aggiornare il Boss.
-def update_boss(b):
-    # Controlla se il boss sta entrando in scena.
-    if b["entering"]:
-        # Controlla se non ha raggiunto la posizione finale.
-        if b["x"] > WIDTH - b["width"] - 50:
-            # Sposta il boss a sinistra.
-            b["x"] -= 3
-        # Se ha raggiunto la posizione.
-        else:
-            # Imposta entering a False.
-            b["entering"] = False
-
-    # Controlla se il boss non sta più entrando.
-    if not b["entering"]:
-        # Muove il boss verticalmente.
-        b["y"] += b["speed"] * b["direction"]
-        # Controlla se tocca il bordo superiore.
-        if b["y"] <= 20:
-            # Cambia direzione verso il basso.
-            b["direction"] = 1
-        # Controlla se tocca il bordo inferiore.
-        elif b["y"] + b["height"] >= HEIGHT - 20:
-            # Cambia direzione verso l'alto.
-            b["direction"] = -1
-
-
-# ───────────── SEZIONE 10: FUNZIONI DI DISEGNO (RENDERING) ─────────────
-
-
-# Funzione per disegnare il giocatore.
+# Funzione che disegna il giocatore con eventuale effetto invincibilità.
 def draw_player(surface, p, current_time):
-    # Controlla se il giocatore è invincibile.
-    if is_invincible(p, current_time):
-        # Crea un effetto lampeggiante.
+    # Controlla se il buff invincibilità è ancora attivo confrontando i tempi.
+    if current_time < p["invincibility_end_time"]:
+        # Crea un effetto lampeggiante alternando visibilità ogni 100ms.
         if (current_time // 100) % 2 == 0:
-            # Definisce il rettangolo dello scudo.
+            # Definisce il rettangolo dello scudo leggermente più grande del giocatore.
             rect = (p["x"] - 4, p["y"] - 4, p["width"] + 8, p["height"] + 8)
-            # Disegna lo scudo ciano.
+            # Disegna il bordo ciano dello scudo con angoli arrotondati.
             pygame.draw.rect(surface, CYAN, rect, 4, border_radius=10)
-
-    # Controlla se l'immagine esiste.
+    # Se l'immagine del razzo è disponibile, la usa per il disegno.
     if razzo:
-        # Disegna l'immagine del razzo.
+        # Disegna il razzo alla posizione corrente del giocatore.
         surface.blit(razzo, (p["x"], p["y"]))
-    # Se l'immagine non esiste.
+    # Se l'immagine non è disponibile, usa un rettangolo di fallback.
     else:
-        # Disegna un rettangolo blu.
+        # Disegna un rettangolo blu come placeholder visivo del giocatore.
         pygame.draw.rect(surface, BLUE, (p["x"], p["y"], p["width"], p["height"]))
 
 
-# Funzione per disegnare il nemico.
+# Funzione che disegna un nemico con la sua barra della vita.
 def draw_enemy(surface, e):
-    # Controlla se l'immagine esiste.
+    # Se l'immagine del nemico è caricata, la visualizza alla sua posizione.
     if enemy_img:
-        # Disegna l'immagine.
+        # Disegna l'immagine del nemico.
         surface.blit(enemy_img, (e["x"], e["y"]))
-    # Se non esiste.
+    # Altrimenti usa un rettangolo rosso come rappresentazione di fallback.
     else:
-        # Disegna un rettangolo rosso.
+        # Disegna il rettangolo rosso del nemico.
         pygame.draw.rect(surface, RED, (e["x"], e["y"], e["width"], e["height"]))
-
-    # Calcola il rapporto della vita.
+    # Calcola il rapporto vita corrente/massima per la barra.
     health_ratio = e["health"] / e["max_health"]
-    # Imposta la larghezza della barra.
+    # Imposta la larghezza totale della barra della vita del nemico.
     bar_width = 40
-    # Imposta l'altezza della barra.
+    # Imposta l'altezza della barra della vita.
     bar_height = 5
-    # Calcola la posizione X.
+    # Calcola la coordinata X centrando la barra rispetto al nemico.
     bar_x = e["x"] + (e["width"] - bar_width) // 2
-    # Calcola la posizione Y.
+    # Posiziona la barra sopra il nemico con un margine di 10 pixel.
     bar_y = e["y"] - 10
-
-    # Disegna lo sfondo della barra (rosso).
+    # Disegna lo sfondo rosso della barra (rappresenta la vita mancante).
     pygame.draw.rect(surface, RED, (bar_x, bar_y, bar_width, bar_height))
-    # Disegna la vita attuale (verde).
-    pygame.draw.rect(
-        surface, GREEN, (bar_x, bar_y, bar_width * health_ratio, bar_height)
-    )
+    # Disegna la porzione verde proporzionale alla vita rimanente.
+    pygame.draw.rect(surface, GREEN, (bar_x, bar_y, int(bar_width * health_ratio), bar_height))
 
 
-# Funzione per disegnare il Boss.
+# Funzione che disegna il Boss con la sua barra della vita prominente.
 def draw_boss(surface, b):
-    # Controlla se l'immagine esiste.
+    # Se l'immagine del boss è disponibile, la visualizza alla sua posizione.
     if boss_img:
-        # Disegna l'immagine.
+        # Disegna l'immagine del boss.
         surface.blit(boss_img, (b["x"], b["y"]))
-    # Se non esiste.
+    # Se non è disponibile, disegna forme geometriche come fallback visivo.
     else:
-        # Disegna rettangolo nero.
+        # Disegna il rettangolo scuro del corpo del boss.
         pygame.draw.rect(surface, BLACK, (b["x"], b["y"], b["width"], b["height"]))
-        # Disegna bordo viola.
+        # Disegna il bordo viola per distinguere il boss dagli altri elementi.
         pygame.draw.rect(surface, PURPLE, (b["x"], b["y"], b["width"], b["height"]), 4)
-
-    # Calcola il rapporto della vita.
+    # Calcola il rapporto vita per determinare quanto della barra colorare.
     health_ratio = b["health"] / b["max_health"]
-    # Imposta dimensioni barra.
+    # La barra del boss è più larga di quella dei nemici normali.
     bar_width = 120
+    # L'altezza è anche maggiore per indicare l'importanza del boss.
     bar_height = 12
-    # Calcola posizione.
+    # Centra la barra orizzontalmente rispetto al boss.
     bar_x = b["x"] + (b["width"] - bar_width) // 2
+    # Posiziona la barra sopra il boss con un margine di 20 pixel.
     bar_y = b["y"] - 20
-    # Disegna sfondo rosso.
+    # Disegna lo sfondo rosso della barra vita del boss.
     pygame.draw.rect(surface, RED, (bar_x, bar_y, bar_width, bar_height))
-    # Disegna vita verde.
-    pygame.draw.rect(
-        surface, GREEN, (bar_x, bar_y, bar_width * health_ratio, bar_height)
-    )
-    # Disegna bordo bianco.
+    # Disegna la vita rimanente del boss in verde.
+    pygame.draw.rect(surface, GREEN, (bar_x, bar_y, int(bar_width * health_ratio), bar_height))
+    # Aggiunge un bordo bianco per rendere la barra più leggibile.
     pygame.draw.rect(surface, WHITE, (bar_x, bar_y, bar_width, bar_height), 2)
 
 
-# Funzione per disegnare i boost.
+# Funzione che disegna un power-up con la sua immagine o colore di fallback.
 def draw_boost(surface, b):
-    # Inizializza le variabili.
+    # Inizializza le variabili per immagine e colore prima del controllo del tipo.
     img = None
+    # Colore di fallback bianco usato solo se nessuna immagine è disponibile.
     color = WHITE
-    # Controlla il tipo di boost.
+    # Seleziona immagine e colore in base al tipo di power-up.
     if b["type"] == "power":
-        # Assegna immagine.
+        # Usa l'immagine della potenza e il colore giallo.
         img = boost_power_img
-        # Assegna colore.
         color = YELLOW
-    # Controlla il tipo.
     elif b["type"] == "health":
-        # Assegna immagine.
+        # Usa l'immagine del cuore e il colore verde.
         img = boost_health_img
-        # Assegna colore.
         color = GREEN
-    # Controlla il tipo.
     elif b["type"] == "speed":
-        # Assegna immagine.
+        # Usa l'immagine della velocità e il colore blu.
         img = boost_speed_img
-        # Assegna colore.
         color = BLUE
-    # Controlla il tipo.
     elif b["type"] == "invincibility":
-        # Assegna immagine.
+        # Usa l'immagine dell'invincibilità e il colore ciano.
         img = boost_invincibility_img
-        # Assegna colore.
         color = CYAN
-
-    # Se l'immagine esiste.
+    # Se l'immagine specifica è disponibile, la disegna alla posizione del boost.
     if img:
-        # Disegna l'immagine.
+        # Visualizza l'immagine del power-up.
         surface.blit(img, (b["x"], b["y"]))
-    # Se non esiste.
+    # Se nessuna immagine è caricata, disegna un cerchio colorato come fallback.
     else:
-        # Disegna un cerchio colorato.
+        # Disegna un cerchio colorato centrato nel rettangolo del boost.
         pygame.draw.circle(surface, color, (int(b["x"] + 25), int(b["y"] + 25)), 25)
 
 
-# Funzione per disegnare l'HUD (interfaccia).
+# Funzione che disegna l'HUD con vita, punteggio e stato dei power-up.
 def draw_hud(surface, player, score, font, small_font, current_time):
-    # Imposta la posizione X della barra.
+    # Posizione X del bordo sinistro della barra della vita.
     bar_x = 20
-    # Imposta la posizione Y.
+    # Posizione Y del bordo superiore della barra della vita.
     bar_y = 20
-    # Imposta la larghezza.
+    # Larghezza totale della barra della vita.
     bar_width = 250
-    # Imposta l'altezza.
+    # Altezza della barra della vita.
     bar_height = 25
-
-    # Disegna lo sfondo della barra.
-    pygame.draw.rect(
-        surface, (30, 30, 30), (bar_x, bar_y, bar_width, bar_height), border_radius=5
-    )
-    # Calcola i pixel di vita.
+    # Disegna lo sfondo scuro della barra per creare contrasto visivo.
+    pygame.draw.rect(surface, (30, 30, 30), (bar_x, bar_y, bar_width, bar_height), border_radius=5)
+    # Calcola i pixel occupati dalla vita proporzionalmente al massimo.
     health_w = int((player["health"] / player["max_health"]) * bar_width)
-    # Controlla il valore della vita per il colore.
+    # Scegli il colore della barra in base alla percentuale di vita rimasta.
     if player["health"] > 50:
-        # Verde se alta.
+        # Verde per vita alta (oltre 50%).
         health_color = GREEN
-    # Se media.
     elif player["health"] > 25:
-        # Giallo.
+        # Giallo per vita media (tra 25% e 50%).
         health_color = YELLOW
-    # Se bassa.
     else:
-        # Rosso.
+        # Rosso per vita bassa (sotto 25%), segnale di pericolo.
         health_color = RED
-    # Disegna la barra della vita.
-    pygame.draw.rect(
-        surface, health_color, (bar_x, bar_y, health_w, bar_height), border_radius=5
-    )
-    # Disegna il bordo.
-    pygame.draw.rect(
-        surface, WHITE, (bar_x, bar_y, bar_width, bar_height), 3, border_radius=5
-    )
-
-    # Crea il testo della vita.
+    # Disegna la porzione colorata della barra vita.
+    pygame.draw.rect(surface, health_color, (bar_x, bar_y, health_w, bar_height), border_radius=5)
+    # Disegna il bordo bianco della barra per definirne i contorni.
+    pygame.draw.rect(surface, WHITE, (bar_x, bar_y, bar_width, bar_height), 3, border_radius=5)
+    # Renderizza il testo numerico della vita corrente.
     health_text = font.render(f"VITA: {player['health']}", True, WHITE)
-    # Disegna il testo.
+    # Posiziona il testo della vita immediatamente a destra della barra.
     surface.blit(health_text, (bar_x + bar_width + 10, bar_y))
-
-    # Crea il testo della potenza.
+    # Renderizza il testo del moltiplicatore di potenza corrente.
     pow_text = font.render(f"POW: x{player['power']}", True, YELLOW)
-    # Disegna il testo.
+    # Disegna il testo della potenza sotto la barra vita.
     surface.blit(pow_text, (20, 55))
-
-    # Crea il testo del punteggio.
+    # Renderizza il testo del punteggio corrente.
     score_text = font.render(f"SCORE: {score}", True, YELLOW)
-    # Disegna il testo.
+    # Disegna il punteggio sotto il testo della potenza.
     surface.blit(score_text, (20, 85))
-
-    # --- PANNELLO BOOST ---
-    # Imposta posizione X.
+    # Posizione X del pannello dei power-up attivi nell'angolo in alto a destra.
     panel_x = WIDTH - 200
-    # Imposta posizione Y.
+    # Posizione Y del pannello, vicino al bordo superiore dello schermo.
     panel_y = 10
-    # Crea la superficie trasparente.
+    # Crea una superficie con canale alpha per effetto trasparenza del pannello.
     panel = pygame.Surface((190, 130), pygame.SRCALPHA)
-    # Riempie di nero semi-trasparente.
+    # Riempie il pannello con nero semi-trasparente per leggibilità.
     panel.fill((0, 0, 0, 140))
-    # Disegna il pannello.
+    # Disegna il pannello sullo schermo con un piccolo offset per il bordo.
     surface.blit(panel, (panel_x - 5, panel_y - 5))
-
-    # Lista dei boost.
+    # Lista di tuple con i dati di ciascun power-up da mostrare nel pannello.
     boost_data = [
         ("power", boost_power_img, YELLOW, "POW", "power_end_time"),
         ("speed", boost_speed_img, BLUE, "VEL", "speed_end_time"),
-        (
-            "invincibility",
-            boost_invincibility_img,
-            CYAN,
-            "INV",
-            "invincibility_end_time",
-        ),
+        ("invincibility", boost_invincibility_img, CYAN, "INV", "invincibility_end_time"),
         ("health", boost_health_img, GREEN, "VITA", None),
     ]
-
-    # Cicla per ogni boost.
+    # Itera su ogni power-up per disegnarne l'icona e il timer nel pannello.
     for i, (btype, img, color, label, timer_key) in enumerate(boost_data):
-        # Calcola la Y della riga.
+        # Calcola la posizione Y della riga corrente nel pannello.
         row_y = panel_y + i * 30
-        # Se l'immagine esiste.
+        # Se l'immagine del boost è disponibile, mostra l'icona ridimensionata.
         if img:
-            # Scala l'immagine.
+            # Scala l'icona a 24x24 per adattarla al pannello compatto.
             small = pygame.transform.scale(img, (24, 24))
-            # Disegna l'icona.
+            # Disegna l'icona del boost nella riga corrente del pannello.
             surface.blit(small, (panel_x, row_y))
-
-        # Se il tipo è health.
+        # Per il boost vita non c'è timer, quindi mostra semplicemente "PRONTO".
         if btype == "health":
-            # Crea testo fisso.
+            # Testo fisso per il boost vita che non ha durata.
             txt = small_font.render(f"{label}: PRONTO", True, color)
-        # Se ha un timer.
         else:
-            # Ottiene il tempo di fine.
+            # Legge il tempo di fine del buff dal dizionario del giocatore.
             end_time = player[timer_key]
-            # Controlla se attivo.
+            # Se il buff è ancora attivo, mostra il countdown in secondi.
             if current_time < end_time:
-                # Calcola secondi.
+                # Calcola i secondi rimanenti con un decimale di precisione.
                 seconds_left = (end_time - current_time) / 1000.0
-                # Crea testo con tempo.
+                # Renderizza il countdown con colore attivo.
                 txt = small_font.render(f"{label}: {seconds_left:.1f}s", True, color)
-            # Se non attivo.
+            # Se il buff è scaduto, mostra "OFF" con colore grigio spento.
             else:
-                # Crea testo OFF.
+                # Renderizza il testo OFF in grigio per indicare assenza del buff.
                 txt = small_font.render(f"{label}: OFF", True, (80, 80, 80))
-        # Disegna il testo.
+        # Disegna il testo del power-up accanto all'icona con un piccolo offset verticale.
         surface.blit(txt, (panel_x + 30, row_y + 3))
 
 
-# ───────────── SEZIONE 11: SCHERMATE (MENU, SETTINGS, GAME OVER) ─────────────
+# ───────────── SEZIONE 11: SCHERMATE UI ─────────────
 
 
-# Funzione per mostrare il menu.
-def show_menu():
-    # Crea l'orologio.
-    clock = pygame.time.Clock()
-    # Avvia la musica.
-    play_music(MENU_MUSIC_FILE)
-
-    # Crea il font del titolo.
-    title_font = pygame.font.Font(None, 120)
-    # Crea il font dei bottoni.
-    button_font = pygame.font.Font(None, 50)
-    # Testo del titolo.
-    title_text = "MissionOne"
-
-    # Crea il rettangolo del bottone ENTER.
-    button_enter = pygame.Rect(WIDTH // 2 - 150, HEIGHT - 150, 300, 70)
-    # Crea il rettangolo del bottone settings.
-    button_settings = pygame.Rect(WIDTH - 90, 20, 70, 70)
-
-    # Carica l'immagine del razzo.
-    razzo_menu = load(files("images") / "razzo.png")
-    # Se caricata.
-    if razzo_menu:
-        # Scala l'immagine.
-        razzo_menu = pygame.transform.scale(razzo_menu, (350, 350))
-
-    # Variabile tempo.
-    t = 0
-
-    # Loop del menu.
-    while True:
-        # Ottiene posizione mouse.
-        mouse_pos = pygame.mouse.get_pos()
-        # Resetta click.
-        click = False
-
-        # Cicla gli eventi.
-        for event in pygame.event.get():
-            # Se quit.
-            if event.type == pygame.QUIT:
-                # Ritorna QUIT.
-                return "QUIT"
-            # Se tasto premuto.
-            if event.type == pygame.KEYDOWN:
-                # Se INVIO.
-                if event.key == pygame.K_RETURN:
-                    # Ritorna GAME.
-                    return "GAME"
-            # Se click mouse.
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # Imposta click.
-                click = True
-
-        # DISEGNO:
-        # Se c'è lo sfondo.
-        if background:
-            # Disegna sfondo.
-            screen.blit(background, (0, 0))
-        # Se non c'è.
-        else:
-            # Sfondo grigio.
-            screen.fill(GRAY)
-
-        # Se c'è il razzo.
-        if razzo_menu:
-            # Calcola oscillazione.
-            offset = math.sin(t / 20) * 10
-            # Posizione X centrata.
-            draw_x = WIDTH // 2 - razzo_menu.get_width() // 2
-            # Posizione Y centrata con offset.
-            draw_y = HEIGHT // 2 - razzo_menu.get_height() // 2 + offset
-            # Disegna il razzo.
-            screen.blit(razzo_menu, (draw_x, draw_y))
-
-        # Crea il testo del titolo.
-        title_surf = title_font.render(title_text, True, PINK)
-        # Crea l'ombra.
-        shadow_surf = title_font.render(title_text, True, BLACK)
-        # Ottiene il rettangolo.
-        title_rect = title_surf.get_rect(center=(WIDTH // 2, 100))
-        # Disegna l'ombra.
-        screen.blit(shadow_surf, (title_rect.x + 4, title_rect.y + 4))
-        # Disegna il titolo.
-        screen.blit(title_surf, title_rect)
-
-        # --- RECORD VIOLA ---
-        # Crea il testo del record in viola.
-        record_text = button_font.render(f"RECORD: {HIGH_SCORE}", True, PURPLE)
-        # Centra il testo.
-        screen.blit(record_text, (WIDTH // 2 - record_text.get_width() // 2, 150))
-
-        # Controlla hover ENTER.
-        hover_enter = button_enter.collidepoint(mouse_pos)
-        # Se hover.
-        if hover_enter:
-            # Colore viola.
-            color = PURPLE
-            # Bordo scuro.
-            border = (100, 0, 150)
-        # Se no hover.
-        else:
-            # Grigio.
-            color = (200, 200, 200)
-            # Bordo grigio.
-            border = (150, 150, 150)
-
-        # Disegna il rettangolo.
-        pygame.draw.rect(screen, color, button_enter, border_radius=15)
-        # Disegna il bordo.
-        pygame.draw.rect(screen, border, button_enter, 4, border_radius=15)
-
-        # Crea il testo ENTER.
-        txt = button_font.render("ENTER", True, WHITE if hover_enter else BLACK)
-        # Centra il testo.
-        screen.blit(
-            txt,
-            (
-                button_enter.centerx - txt.get_width() // 2,
-                button_enter.centery - txt.get_height() // 2,
-            ),
-        )
-
-        # Controlla hover settings.
-        hover_settings = button_settings.collidepoint(mouse_pos)
-        # Se esiste l'icona.
-        if settings_icon:
-            # Se hover.
-            if hover_settings:
-                # Copia icona.
-                colored_icon = settings_icon.copy()
-                # Tinta viola.
-                colored_icon.fill(PURPLE, special_flags=pygame.BLEND_RGBA_ADD)
-                # Disegna.
-                screen.blit(colored_icon, button_settings)
-            # Se no hover.
-            else:
-                # Normale.
-                screen.blit(settings_icon, button_settings)
-
-        # Se click.
-        if click:
-            # Se ENTER.
-            if hover_enter:
-                # Suono.
-                if click_sound:
-                    click_sound.play()
-                # Game.
-                return "GAME"
-            # Se settings.
-            if hover_settings:
-                # Suono.
-                if click_sound:
-                    click_sound.play()
-                # Apri settings.
-                show_settings()
-
-        # Aggiorna display.
-        pygame.display.flip()
-        # Tick.
-        clock.tick(60)
-        # Avanza tempo.
-        t += 1
-
-
-# Funzione per mostrare le impostazioni.
+# Funzione che mostra e gestisce il menu delle impostazioni.
 def show_settings():
-    # Orologio.
+    # Crea l'orologio per limitare il framerate a 60fps.
     clock = pygame.time.Clock()
-    # Font.
+    # Font grande per il titolo della schermata impostazioni.
     title_font = pygame.font.Font(None, 80)
+    # Font medio per le etichette delle singole impostazioni.
     label_font = pygame.font.Font(None, 45)
+    # Font per il testo dei bottoni interattivi.
     button_font = pygame.font.Font(None, 40)
-
-    # Rettangoli slider.
+    # Rettangolo della barra di scorrimento del volume.
     slider_rect = pygame.Rect(200, 200, 400, 10)
+    # Rettangolo della maniglia trascinabile dello slider.
     slider_handle = pygame.Rect(0, 0, 20, 30)
-    # Flag dragging.
+    # Flag che indica se l'utente sta trascinando la maniglia del volume.
     dragging = False
-
-    # Bottoni difficoltà.
+    # Rettangolo del bottone per selezionare la difficoltà base.
     button_base = pygame.Rect(200, 320, 180, 60)
+    # Rettangolo del bottone per selezionare la difficoltà avanzata.
     button_avanzato = pygame.Rect(420, 320, 180, 60)
+    # Rettangolo del bottone per tornare al menu principale.
     button_back = pygame.Rect(WIDTH // 2 - 100, HEIGHT - 100, 200, 60)
-
-    # Loop settings.
+    # Loop principale della schermata impostazioni.
     while True:
-        # Mouse.
+        # Posizione corrente del cursore del mouse.
         mouse_pos = pygame.mouse.get_pos()
-        # Click.
+        # Flag click reset a False ogni frame.
         click = False
-        # Eventi.
+        # Cicla tutti gli eventi in coda.
         for event in pygame.event.get():
-            # Quit.
+            # Se l'utente chiude la finestra, termina il programma.
             if event.type == pygame.QUIT:
-                # Chiudi.
                 pygame.quit()
-                # Esci.
                 sys.exit()
-            # Mouse down.
+            # Rileva la pressione del mouse per click e inizio drag.
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # Click true.
                 click = True
-                # Dragging false.
                 dragging = False
-            # Mouse up.
+            # Rileva il rilascio del mouse per terminare il drag.
             if event.type == pygame.MOUSEBUTTONUP:
-                # Dragging false.
                 dragging = False
-
-        # Sfondo.
+        # Disegna lo sfondo o il colore di fallback.
         if background:
             screen.blit(background, (0, 0))
         else:
             screen.fill(GRAY)
-        # Overlay.
+        # Crea un overlay semi-trasparente scuro per migliorare la leggibilità.
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        # Riempie l'overlay con grigio scuro semi-opaco.
         overlay.fill((40, 40, 40, 200))
+        # Applica l'overlay sopra lo sfondo.
         screen.blit(overlay, (0, 0))
-
-        # Titolo.
+        # Renderizza il titolo "IMPOSTAZIONI" in viola.
         title = title_font.render("IMPOSTAZIONI", True, PURPLE)
+        # Centra e disegna il titolo in alto nella schermata.
         screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 50))
-
-        # Etichetta volume.
+        # Renderizza l'etichetta "Volume" sopra lo slider.
         volume_label = label_font.render("Volume", True, PURPLE)
+        # Posiziona l'etichetta volume a sinistra dello slider.
         screen.blit(volume_label, (200, 150))
-        # Valore.
+        # Renderizza il valore percentuale del volume corrente.
         volume_value = label_font.render(f"{settings['volume']}%", True, PURPLE)
+        # Posiziona il valore percentuale a destra dello slider.
         screen.blit(volume_value, (620, 150))
-
-        # Barra slider.
+        # Disegna la barra bianca dello slider del volume.
         pygame.draw.rect(screen, WHITE, slider_rect, border_radius=5)
-        # Posizione handle.
-        slider_handle.centerx = (
-            slider_rect.x + (settings["volume"] / 100) * slider_rect.width
-        )
+        # Posiziona la maniglia proporzionalmente al volume corrente.
+        slider_handle.centerx = slider_rect.x + (settings["volume"] / 100) * slider_rect.width
+        # Centra verticalmente la maniglia sulla barra.
         slider_handle.centery = slider_rect.centery
-
-        # Se collide.
+        # Se l'utente clicca sulla maniglia, attiva il trascinamento.
         if slider_handle.collidepoint(mouse_pos) and click:
-            # Dragging true.
             dragging = True
-        # Se dragging.
+        # Se il trascinamento è attivo, aggiorna il volume in base alla posizione del mouse.
         if dragging:
-            # Nuova X.
+            # Limita la posizione X all'interno della barra dello slider.
             new_x = max(slider_rect.x, min(mouse_pos[0], slider_rect.right))
-            # Calcolo volume.
-            settings["volume"] = int(
-                ((new_x - slider_rect.x) / slider_rect.width) * 100
-            )
-            # Posizione handle.
+            # Calcola il nuovo volume come percentuale della larghezza barra.
+            settings["volume"] = int(((new_x - slider_rect.x) / slider_rect.width) * 100)
+            # Aggiorna la posizione visiva della maniglia.
             slider_handle.centerx = new_x
-            # Imposta volume.
+            # Applica immediatamente il nuovo volume alla musica in riproduzione.
             pygame.mixer.music.set_volume(settings["volume"] / 100.0)
-
-        # Disegna handle.
+        # Disegna la maniglia viola dello slider.
         pygame.draw.rect(screen, PURPLE, slider_handle, border_radius=5)
-
-        # Etichetta diff.
+        # Renderizza l'etichetta della sezione difficoltà.
         diff_label = label_font.render("Difficoltà", True, PURPLE)
+        # Posiziona l'etichetta sopra i bottoni di selezione difficoltà.
         screen.blit(diff_label, (200, 270))
-
-        # Difficoltà base.
+        # Determina se la difficoltà corrente è "base".
         is_base = settings["difficulty"] == "base"
+        # Usa verde se selezionato, grigio scuro altrimenti.
         color_base = GREEN if is_base else (80, 80, 80)
+        # Disegna il rettangolo del bottone BASE.
         pygame.draw.rect(screen, color_base, button_base, border_radius=10)
-        pygame.draw.rect(
-            screen, GREEN if is_base else WHITE, button_base, 4, border_radius=10
-        )
+        # Disegna il bordo del bottone, verde se attivo, bianco altrimenti.
+        pygame.draw.rect(screen, GREEN if is_base else WHITE, button_base, 4, border_radius=10)
+        # Renderizza il testo "BASE" centrato nel bottone.
         txt_base = button_font.render("BASE", True, WHITE)
-        screen.blit(
-            txt_base,
-            (
-                button_base.centerx - txt_base.get_width() // 2,
-                button_base.centery - txt_base.get_height() // 2,
-            ),
-        )
-
-        # Difficoltà avanzato.
+        # Disegna il testo centrato nel bottone BASE.
+        screen.blit(txt_base, (button_base.centerx - txt_base.get_width() // 2, button_base.centery - txt_base.get_height() // 2))
+        # Determina se la difficoltà corrente è "avanzato".
         is_avanzato = settings["difficulty"] == "avanzato"
+        # Usa rosso se selezionato, grigio scuro altrimenti.
         color_avanzato = RED if is_avanzato else (80, 80, 80)
+        # Disegna il rettangolo del bottone AVANZATO.
         pygame.draw.rect(screen, color_avanzato, button_avanzato, border_radius=10)
-        pygame.draw.rect(
-            screen, RED if is_avanzato else WHITE, button_avanzato, 4, border_radius=10
-        )
+        # Disegna il bordo del bottone, rosso se attivo, bianco altrimenti.
+        pygame.draw.rect(screen, RED if is_avanzato else WHITE, button_avanzato, 4, border_radius=10)
+        # Renderizza il testo "AVANZATO" centrato nel bottone.
         txt_avanzato = button_font.render("AVANZATO", True, WHITE)
-        screen.blit(
-            txt_avanzato,
-            (
-                button_avanzato.centerx - txt_avanzato.get_width() // 2,
-                button_avanzato.centery - txt_avanzato.get_height() // 2,
-            ),
-        )
-
-        # Click.
+        # Disegna il testo centrato nel bottone AVANZATO.
+        screen.blit(txt_avanzato, (button_avanzato.centerx - txt_avanzato.get_width() // 2, button_avanzato.centery - txt_avanzato.get_height() // 2))
+        # Gestisce i click sui bottoni difficoltà e indietro.
         if click:
-            # Su base.
+            # Se clicca BASE, aggiorna la difficoltà nelle impostazioni.
             if button_base.collidepoint(mouse_pos):
-                # Suono.
-                if click_sound:
-                    click_sound.play()
-                # Imposta.
+                if click_sound: click_sound.play()
                 settings["difficulty"] = "base"
-            # Su avanzato.
+            # Se clicca AVANZATO, aggiorna la difficoltà nelle impostazioni.
             if button_avanzato.collidepoint(mouse_pos):
-                # Suono.
-                if click_sound:
-                    click_sound.play()
-                # Imposta.
+                if click_sound: click_sound.play()
                 settings["difficulty"] = "avanzato"
-
-        # Indietro.
+        # Determina se il mouse è sopra il bottone INDIETRO per l'effetto hover.
         hover_back = button_back.collidepoint(mouse_pos)
+        # Usa viola per hover, bianco altrimenti.
         back_color = PURPLE if hover_back else WHITE
+        # Disegna il rettangolo del bottone INDIETRO.
         pygame.draw.rect(screen, back_color, button_back, border_radius=10)
+        # Disegna il bordo bianco del bottone INDIETRO.
         pygame.draw.rect(screen, WHITE, button_back, 3, border_radius=10)
+        # Renderizza il testo "INDIETRO" con colore invertito rispetto allo sfondo.
         txt_back = button_font.render("INDIETRO", True, WHITE if hover_back else BLACK)
-        screen.blit(
-            txt_back,
-            (
-                button_back.centerx - txt_back.get_width() // 2,
-                button_back.centery - txt_back.get_height() // 2,
-            ),
-        )
-
-        # Se click indietro.
+        # Disegna il testo centrato nel bottone INDIETRO.
+        screen.blit(txt_back, (button_back.centerx - txt_back.get_width() // 2, button_back.centery - txt_back.get_height() // 2))
+        # Se l'utente clicca INDIETRO, suona il click e torna al menu.
         if hover_back and click:
-            # Suono.
-            if click_sound:
-                click_sound.play()
-            # Ritorna.
+            if click_sound: click_sound.play()
             return
-
-        # Flip.
+        # Aggiorna il display con tutto ciò che è stato disegnato.
         pygame.display.flip()
-        # Tick.
+        # Limita il loop a 60 fotogrammi al secondo.
         clock.tick(60)
 
 
-# Funzione game over.
-def show_game_over(score):
-    # Stop musica.
-    pygame.mixer.music.stop()
-    # Orologio.
-    clock = pygame.time.Clock()
-    # Font.
-    font_big = pygame.font.Font(None, 100)
-    font_small = pygame.font.Font(None, 50)
-    button_font = pygame.font.Font(None, 40)
-
-    # Bottoni.
-    button_retry = pygame.Rect(WIDTH // 2 - 150, 420, 140, 60)
-    button_menu = pygame.Rect(WIDTH // 2 + 10, 420, 140, 60)
-
-    # Salva record.
-    save_high_score(score)
-
-    # Loop.
-    while True:
-        # Mouse.
-        mouse_pos = pygame.mouse.get_pos()
-        # Click.
-        click = False
-        # Eventi.
-        for event in pygame.event.get():
-            # Quit.
-            if event.type == pygame.QUIT:
-                return "QUIT"
-            # Mouse.
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                click = True
-
-        # Sfondo.
-        screen.fill(BLACK)
-
-        # Titolo.
-        go = font_big.render("GAME OVER", True, RED)
-        screen.blit(go, (WIDTH // 2 - go.get_width() // 2, 120))
-
-        # Linea.
-        pygame.draw.line(screen, WHITE, (100, 230), (WIDTH - 100, 230), 2)
-
-        # --- PUNTEGGIO E RECORD LILLA ---
-        # Se nuovo record.
-        if score == HIGH_SCORE and score > 0:
-            # Testo nuovo record.
-            new_rec = font_small.render("NUOVO RECORD!", True, YELLOW)
-            # Disegna.
-            screen.blit(new_rec, (WIDTH // 2 - new_rec.get_width() // 2, 260))
-            # Punteggio LILLA.
-            sc = font_small.render(f"PUNTEGGIO: {score}", True, LILAC)
-            # Disegna.
-            screen.blit(sc, (WIDTH // 2 - sc.get_width() // 2, 310))
-        # Se non record.
-        else:
-            # Punteggio LILLA.
-            sc = font_small.render(f"PUNTEGGIO: {score}", True, LILAC)
-            # Disegna.
-            screen.blit(sc, (WIDTH // 2 - sc.get_width() // 2, 260))
-            # Record LILLA.
-            rec = font_small.render(f"RECORD: {HIGH_SCORE}", True, LILAC)
-            # Disegna.
-            screen.blit(rec, (WIDTH // 2 - rec.get_width() // 2, 310))
-
-        # Retry.
-        hover_retry = button_retry.collidepoint(mouse_pos)
-        retry_color = PURPLE if hover_retry else WHITE
-        pygame.draw.rect(screen, retry_color, button_retry, border_radius=10)
-        pygame.draw.rect(screen, WHITE, button_retry, 3, border_radius=10)
-        txt_retry = button_font.render("RIPROVA", True, WHITE if hover_retry else BLACK)
-        screen.blit(
-            txt_retry,
-            (
-                button_retry.centerx - txt_retry.get_width() // 2,
-                button_retry.centery - txt_retry.get_height() // 2,
-            ),
-        )
-
-        # Menu.
-        hover_menu = button_menu.collidepoint(mouse_pos)
-        menu_color = PURPLE if hover_menu else WHITE
-        pygame.draw.rect(screen, menu_color, button_menu, border_radius=10)
-        pygame.draw.rect(screen, WHITE, button_menu, 3, border_radius=10)
-        txt_menu = button_font.render("MENU", True, WHITE if hover_menu else BLACK)
-        screen.blit(
-            txt_menu,
-            (
-                button_menu.centerx - txt_menu.get_width() // 2,
-                button_menu.centery - txt_menu.get_height() // 2,
-            ),
-        )
-
-        # Click.
-        if click:
-            # Retry.
-            if hover_retry:
-                # Suono.
-                if click_sound:
-                    click_sound.play()
-                # Game.
-                return "GAME"
-            # Menu.
-            if hover_menu:
-                # Suono.
-                if click_sound:
-                    click_sound.play()
-                # Menu.
-                return "MENU"
-
-        # Flip.
-        pygame.display.flip()
-        # Tick.
-        clock.tick(60)
+# ───────────── SEZIONE 12: FUNZIONE MAIN ─────────────
+# La funzione main contiene tutta la logica applicativa principale:
+# - Menu principale con animazioni
+# - Schermata Game Over
+# - Loop di gioco completo (spawn, movimento, collisioni, rendering)
 
 
-# ───────────── SEZIONE 12: LOOP DI GIOCO PRINCIPALE ─────────────
-
-
-# Funzione loop principale.
-def run_game():
-    # Musica.
-    play_music(GAME_MUSIC_FILE)
-    # Orologio.
-    clock = pygame.time.Clock()
-    # Font.
-    font = pygame.font.Font(None, 32)
-    small_font = pygame.font.Font(None, 28)
-    big_font = pygame.font.Font(None, 100)
-
-    # Giocatore.
-    player = make_player()
-    # Liste.
-    bullets = []
-    enemies = []
-    enemy_bullets = []
-    missiles = []
-    boosts = []
-    boss = None
-    boss_missiles = []
-    # Stato.
-    wave_number = 1
-    next_boss_score = 3000
-    warning_active = False
-    warning_start_time = 0
-    score = 0
-    # Timer.
-    enemy_spawn_timer = 0
-    missile_spawn_timer = 0
-    boost_spawn_timer = 0
-    damage_flash = 0
-    # Running.
-    running = True
-    # Loop.
-    while running:
-        # Tempo.
-        current_time = pygame.time.get_ticks()
-        # Eventi.
-        for event in pygame.event.get():
-            # Quit.
-            if event.type == pygame.QUIT:
-                return score
-            # Tasto.
-            if event.type == pygame.KEYDOWN:
-                # Esc.
-                if event.key == pygame.K_ESCAPE:
-                    return -1
-        # Tasti.
-        keys = pygame.key.get_pressed()
-        # Logica boss.
-        if score >= next_boss_score and boss is None and not warning_active:
-            warning_active = True
-            warning_start_time = current_time
-            next_boss_score += 3000
-        if warning_active:
-            if current_time - warning_start_time > 3000:
-                warning_active = False
-                boss = make_boss(wave_number)
-                wave_number += 1
-                enemies.clear()
-                enemy_bullets.clear()
-                missiles.clear()
-                boosts.clear()
-        # Muovi player.
-        update_player(player, keys, current_time)
-        # Sparo.
-        if (
-            keys[pygame.K_SPACE]
-            and current_time - player["last_shot"] > player["fire_rate"]
-        ):
-            player["last_shot"] = current_time
-            bullets.append(
-                make_bullet(
-                    player["x"] + player["width"],
-                    player["y"] + player["height"] // 2,
-                    player["power"],
-                )
-            )
-        # Spawn.
-        if not warning_active and boss is None:
-            enemy_spawn_timer += 1
-            if enemy_spawn_timer > (100 if settings["difficulty"] == "base" else 70):
-                enemies.append(make_enemy())
-                enemy_spawn_timer = 0
-            missile_spawn_timer += 1
-            if missile_spawn_timer > (180 if settings["difficulty"] == "base" else 130):
-                missiles.append(make_missile())
-                missile_spawn_timer = 0
-            boost_spawn_timer += 1
-            if boost_spawn_timer > 250:
-                boosts.append(
-                    make_boost(
-                        random.choice(["power", "health", "speed", "invincibility"])
-                    )
-                )
-                boost_spawn_timer = 0
-        # Muovi proiettili.
-        for b in bullets[:]:
-            b["x"] += b["speed"]
-            if b["x"] > WIDTH:
-                bullets.remove(b)
-        # Muovi nemici.
-        for e in enemies[:]:
-            e["x"] -= e["speed"]
-            if current_time - e["last_shot"] > e["shoot_delay"]:
-                e["last_shot"] = current_time
-                e["shoot_delay"] = random.randint(1000, 2500)
-                enemy_bullets.append(
-                    make_enemy_bullet(e["x"], e["y"] + e["height"] // 2)
-                )
-            if e["x"] < -e["width"]:
-                enemies.remove(e)
-        # Muovi proiettili nemici.
-        for eb in enemy_bullets[:]:
-            eb["x"] -= eb["speed"]
-            if eb["x"] < 0:
-                enemy_bullets.remove(eb)
-        # Muovi missili.
-        for m in missiles[:]:
-            m["x"] -= m["speed"]
-            if m["x"] < -m["width"] - 20:
-                missiles.remove(m)
-        # Muovi boost.
-        for b in boosts[:]:
-            b["x"] -= b["speed"]
-            if b["x"] < -b["width"]:
-                boosts.remove(b)
-        # Boss.
-        if boss:
-            update_boss(boss)
-            if (
-                not boss["entering"]
-                and current_time - boss["last_shot"] > boss["shoot_delay"]
-            ):
-                boss["last_shot"] = current_time
-                player_rect = pygame.Rect(
-                    player["x"], player["y"], player["width"], player["height"]
-                )
-                boss_missiles.append(
-                    make_boss_missile(
-                        boss["x"],
-                        boss["y"] + boss["height"] // 2,
-                        player_rect,
-                        boss["missile_speed"],
-                        boss["damage"],
-                    )
-                )
-            for hm in boss_missiles[:]:
-                hm["x"] += hm["dx"] * hm["speed"]
-                hm["y"] += hm["dy"] * hm["speed"]
-                if (
-                    hm["x"] < -50
-                    or hm["x"] > WIDTH + 50
-                    or hm["y"] < -50
-                    or hm["y"] > HEIGHT + 50
-                ):
-                    if hm in boss_missiles:
-                        boss_missiles.remove(hm)
-        # Collisioni.
-        # Hitbox player.
-        player_rect = pygame.Rect(player["x"] + 20, player["y"] + 55, 140, 70)
-        # Bullets -> Boss.
-        if boss:
-            boss_rect = pygame.Rect(boss["x"], boss["y"], boss["width"], boss["height"])
-            for b in bullets[:]:
-                b_rect = pygame.Rect(b["x"], b["y"], b["width"], b["height"])
-                if b_rect.colliderect(boss_rect):
-                    if b in bullets:
-                        bullets.remove(b)
-                    damage = 100 if b["power"] > 1 else 50
-                    boss["health"] -= damage
-                    if boss["health"] <= 0:
-                        score += 500
-                        boss = None
-                        boss_missiles.clear()
-                    break
-        # Bullets -> Enemies.
-        for b in bullets[:]:
-            for e in enemies[:]:
-                if (
-                    b["x"] < e["x"] + e["width"]
-                    and b["x"] + b["width"] > e["x"]
-                    and b["y"] < e["y"] + e["height"]
-                    and b["y"] + b["height"] > e["y"]
-                ):
-                    if b in bullets:
-                        bullets.remove(b)
-                    damage = 100 if b["power"] > 1 else 50
-                    e["health"] -= damage
-                    if e["health"] <= 0:
-                        if e in enemies:
-                            enemies.remove(e)
-                        score += 10
-        # Nemici -> Player.
-        if not is_invincible(player, current_time):
-            for eb in enemy_bullets[:]:
-                eb_rect = pygame.Rect(eb["x"] - 5, eb["y"] - 5, 10, 10)
-                if player_rect.colliderect(eb_rect):
-                    if eb in enemy_bullets:
-                        enemy_bullets.remove(eb)
-                    player["health"] -= 10
-                    damage_flash = 12
-            # Missili.
-            for m in missiles[:]:
-                # Hitbox missili ridotta.
-                m_rect = pygame.Rect(m["x"] + 15, m["y"] + 6, 20, 8)
-                if player_rect.colliderect(m_rect):
-                    if m in missiles:
-                        missiles.remove(m)
-                    player["health"] -= 20
-                    damage_flash = 20
-            for hm in boss_missiles[:]:
-                hm_rect = pygame.Rect(hm["x"], hm["y"], hm["width"], hm["height"])
-                if player_rect.colliderect(hm_rect):
-                    if hm in boss_missiles:
-                        boss_missiles.remove(hm)
-                    player["health"] -= hm["damage"]
-                    damage_flash = 15
-        # Boost -> Player.
-        for b in boosts[:]:
-            b_rect = pygame.Rect(b["x"], b["y"], b["width"], b["height"])
-            if player_rect.colliderect(b_rect):
-                if b in boosts:
-                    boosts.remove(b)
-                duration = 7000
-                if b["type"] == "power":
-                    player["power_end_time"] = current_time + duration
-                elif b["type"] == "speed":
-                    player["speed_end_time"] = current_time + duration
-                elif b["type"] == "invincibility":
-                    player["invincibility_end_time"] = current_time + duration
-                elif b["type"] == "health":
-                    player["health"] = min(player["health"] + 30, player["max_health"])
-                score += 5
-        # Sconfitta.
-        score += 1
-        player["health"] = max(player["health"], 0)
-        if player["health"] <= 0:
-            running = False
-        # Disegno.
-        if background:
-            screen.blit(background, (0, 0))
-        else:
-            screen.fill(GRAY)
-        if damage_flash > 0:
-            flash_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            alpha = int(120 * (damage_flash / 20))
-            flash_surf.fill((220, 0, 0, alpha))
-            screen.blit(flash_surf, (0, 0))
-            damage_flash -= 1
-        for b in bullets:
-            pygame.draw.ellipse(
-                screen, YELLOW, (b["x"], b["y"], b["width"], b["height"])
-            )
-        for e in enemies:
-            draw_enemy(screen, e)
-        for eb in enemy_bullets:
-            pygame.draw.circle(screen, (255, 50, 50), (int(eb["x"]), int(eb["y"])), 5)
-        for m in missiles:
-            if missile_img:
-                screen.blit(missile_img, (m["x"], m["y"]))
-            else:
-                cy = m["y"] + m["height"] // 2
-                pygame.draw.ellipse(
-                    screen,
-                    (160, 160, 170),
-                    (m["x"], m["y"] + 3, m["width"], m["height"] - 6),
-                )
-                pygame.draw.polygon(
-                    screen,
-                    (255, 180, 0),
-                    [
-                        (m["x"] + m["width"] + 10, cy - 4),
-                        (m["x"] + m["width"] + 10, cy + 4),
-                        (m["x"] + m["width"] + 22, cy),
-                    ],
-                )
-        for b in boosts:
-            draw_boost(screen, b)
-        if boss:
-            draw_boss(screen, boss)
-            for hm in boss_missiles:
-                pygame.draw.ellipse(
-                    screen, (150, 0, 150), (hm["x"], hm["y"], hm["width"], hm["height"])
-                )
-        draw_player(screen, player, current_time)
-        draw_hud(screen, player, score, font, small_font, current_time)
-        if warning_active:
-            warn_text = big_font.render(f"ONDATA {wave_number}", True, RED)
-            if (current_time // 200) % 2 == 0:
-                text_rect = warn_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-                screen.blit(warn_text, text_rect)
-        hint = small_font.render(
-            "← ↑ ↓ → Muovi  |  SPAZIO Spara  |  ESC Menu", True, (180, 180, 180)
-        )
-        screen.blit(hint, (WIDTH // 2 - hint.get_width() // 2, HEIGHT - 28))
-        pygame.display.flip()
-        clock.tick(60)
-    return score
-
-
-# ───────────── SEZIONE 13: FUNZIONE MAIN ─────────────
-
-
-# Funzione main.
+# Funzione principale che gestisce l'intera applicazione.
 def main():
-    # Carica record.
+    # Carica il record salvato dal disco prima di avviare qualsiasi schermata.
     load_high_score()
-    # Stato iniziale.
+
+    # ── SETUP FONT ──
+    # Font grande per il titolo nel menu principale.
+    title_font = pygame.font.Font(None, 120)
+    # Font medio per i bottoni del menu.
+    button_font = pygame.font.Font(None, 50)
+    # Font per i testi di gioco come vita e punteggio nell'HUD.
+    hud_font = pygame.font.Font(None, 32)
+    # Font piccolo per il pannello dei power-up nell'HUD.
+    small_font = pygame.font.Font(None, 28)
+    # Font enorme per messaggi di avviso come "ONDATA N".
+    big_font = pygame.font.Font(None, 100)
+    # Font per i titoli nelle schermate di game over.
+    go_font_big = pygame.font.Font(None, 100)
+    # Font medio per punteggi e record nel game over.
+    go_font_small = pygame.font.Font(None, 50)
+
+    # ── STATO APPLICAZIONE ──
+    # Stato iniziale dell'applicazione: parte sempre dal menu principale.
     state = "MENU"
-    # Loop.
+    # Orologio globale usato in ogni loop per limitare il framerate.
+    clock = pygame.time.Clock()
+
+    # Loop principale dell'intera applicazione, gestisce le transizioni di stato.
     while True:
-        # Menu.
+
+        # ════════════════════════════════════════════════════════════
+        # STATO: MENU PRINCIPALE
+        # ════════════════════════════════════════════════════════════
         if state == "MENU":
-            state = show_menu()
-        # Game.
+            # Avvia la musica del menu in loop continuo.
+            play_music(MENU_MUSIC_FILE)
+
+            # Rettangolo del bottone ENTER per avviare la partita.
+            button_enter = pygame.Rect(WIDTH // 2 - 150, HEIGHT - 150, 300, 70)
+            # Rettangolo del bottone impostazioni in alto a destra.
+            button_settings = pygame.Rect(WIDTH - 90, 20, 70, 70)
+
+            # Carica la versione grande del razzo usata come decorazione nel menu.
+            razzo_menu = load(get_image("razzo.png"))
+            # Se caricata, scala il razzo a una versione grande per il menu.
+            if razzo_menu:
+                razzo_menu = pygame.transform.scale(razzo_menu, (350, 350))
+
+            # Contatore di tempo usato per l'animazione oscillante del razzo.
+            t = 0
+
+            # Loop interno del menu: continua finché l'utente non sceglie un'azione.
+            while state == "MENU":
+                # Posizione corrente del cursore del mouse.
+                mouse_pos = pygame.mouse.get_pos()
+                # Flag click reset a False ogni frame.
+                click = False
+
+                # Cicla tutti gli eventi pygame in coda.
+                for event in pygame.event.get():
+                    # Se l'utente chiude la finestra, termina l'applicazione.
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    # Controlla la pressione dei tasti da tastiera.
+                    if event.type == pygame.KEYDOWN:
+                        # Se premi INVIO dal menu, avvia subito la partita.
+                        if event.key == pygame.K_RETURN:
+                            state = "GAME"
+                    # Controlla il click del mouse.
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        click = True
+
+                # ── DISEGNO MENU ──
+                # Disegna lo sfondo del menu se disponibile, altrimenti colore grigio.
+                if background:
+                    screen.blit(background, (0, 0))
+                else:
+                    screen.fill(GRAY)
+
+                # Calcola l'offset verticale sinusoidale per l'animazione del razzo.
+                if razzo_menu:
+                    # Calcola lo spostamento verticale oscillante basato sul tempo.
+                    offset = math.sin(t / 20) * 10
+                    # Centra il razzo orizzontalmente nella finestra.
+                    draw_x = WIDTH // 2 - razzo_menu.get_width() // 2
+                    # Centra il razzo verticalmente aggiungendo l'offset oscillante.
+                    draw_y = HEIGHT // 2 - razzo_menu.get_height() // 2 + offset
+                    # Disegna il razzo animato nella posizione calcolata.
+                    screen.blit(razzo_menu, (draw_x, draw_y))
+
+                # Renderizza il titolo "MissionOne" in rosa.
+                title_surf = title_font.render("MissionOne", True, PINK)
+                # Renderizza l'ombra del titolo in nero per il rilievo.
+                shadow_surf = title_font.render("MissionOne", True, BLACK)
+                # Crea il rettangolo del titolo centrato in alto.
+                title_rect = title_surf.get_rect(center=(WIDTH // 2, 100))
+                # Disegna prima l'ombra con offset di 4 pixel.
+                screen.blit(shadow_surf, (title_rect.x + 4, title_rect.y + 4))
+                # Disegna il titolo sopra l'ombra.
+                screen.blit(title_surf, title_rect)
+
+                # Renderizza e centra il testo del record in viola.
+                record_text = button_font.render(f"RECORD: {HIGH_SCORE}", True, PURPLE)
+                # Disegna il record sotto il titolo, centrato orizzontalmente.
+                screen.blit(record_text, (WIDTH // 2 - record_text.get_width() // 2, 150))
+
+                # Determina se il mouse è sopra il bottone ENTER per l'effetto hover.
+                hover_enter = button_enter.collidepoint(mouse_pos)
+                # Colore viola per hover, grigio chiaro altrimenti.
+                color_e = PURPLE if hover_enter else (200, 200, 200)
+                # Colore bordo viola scuro per hover, grigio medio altrimenti.
+                border_e = (100, 0, 150) if hover_enter else (150, 150, 150)
+                # Disegna il rettangolo del bottone ENTER con angoli arrotondati.
+                pygame.draw.rect(screen, color_e, button_enter, border_radius=15)
+                # Disegna il bordo del bottone ENTER.
+                pygame.draw.rect(screen, border_e, button_enter, 4, border_radius=15)
+                # Renderizza il testo "ENTER" con colore invertito per contrasto.
+                txt_e = button_font.render("ENTER", True, WHITE if hover_enter else BLACK)
+                # Centra il testo nel bottone ENTER.
+                screen.blit(txt_e, (button_enter.centerx - txt_e.get_width() // 2, button_enter.centery - txt_e.get_height() // 2))
+
+                # Determina se il mouse è sopra il bottone impostazioni.
+                hover_settings = button_settings.collidepoint(mouse_pos)
+                # Se l'icona ingranaggio è disponibile, la disegna con eventuale tinta hover.
+                if settings_icon:
+                    if hover_settings:
+                        # Crea una copia dell'icona per applicare la tinta viola senza modificare l'originale.
+                        colored_icon = settings_icon.copy()
+                        # Applica la tinta viola sopra l'icona con blending additivo.
+                        colored_icon.fill(PURPLE, special_flags=pygame.BLEND_RGBA_ADD)
+                        # Disegna l'icona con tinta hover.
+                        screen.blit(colored_icon, button_settings)
+                    else:
+                        # Disegna l'icona senza tinta nello stato normale.
+                        screen.blit(settings_icon, button_settings)
+
+                # Gestisce i click sui bottoni del menu.
+                if click:
+                    # Click su ENTER: suono e avvio partita.
+                    if hover_enter:
+                        if click_sound: click_sound.play()
+                        state = "GAME"
+                    # Click su impostazioni: suono e apertura pannello settings.
+                    if hover_settings:
+                        if click_sound: click_sound.play()
+                        show_settings()
+
+                # Aggiorna il display con tutto ciò che è stato disegnato.
+                pygame.display.flip()
+                # Limita il loop a 60 FPS.
+                clock.tick(60)
+                # Incrementa il contatore per l'animazione oscillante del razzo.
+                t += 1
+
+        # ════════════════════════════════════════════════════════════
+        # STATO: PARTITA
+        # ════════════════════════════════════════════════════════════
         elif state == "GAME":
-            final_score = run_game()
-            if final_score == -1:
-                state = "MENU"
-            else:
-                state = show_game_over(final_score)
-        # Quit.
-        elif state == "QUIT":
-            pygame.quit()
-            sys.exit()
-        # Break.
-        if state not in ["MENU", "GAME", "QUIT"]:
-            break
+            # Avvia la musica di gioco in loop continuo.
+            play_music(GAME_MUSIC_FILE)
+
+            # ── INIZIALIZZAZIONE STATO GIOCATORE ──
+            # Calcola la velocità base in base alla difficoltà selezionata.
+            base_speed = 5 if settings["difficulty"] == "base" else 7
+            # Crea il dizionario del giocatore con tutti i suoi attributi.
+            player = {
+                "x": 100, "y": HEIGHT // 2,         # Posizione iniziale.
+                "width": 180, "height": 180,          # Dimensioni hitbox.
+                "base_speed": base_speed,              # Velocità base senza buff.
+                "speed": base_speed,                   # Velocità corrente (modificabile dai buff).
+                "health": 100, "max_health": 100,      # Vita attuale e massima.
+                "power": 1,                            # Moltiplicatore danno proiettili.
+                "fire_rate": 300,                      # Millisecondi tra uno sparo e l'altro.
+                "last_shot": 0,                        # Timestamp dell'ultimo sparo effettuato.
+                "power_end_time": 0,                   # Timestamp fine buff potenza.
+                "speed_end_time": 0,                   # Timestamp fine buff velocità.
+                "invincibility_end_time": 0,           # Timestamp fine buff invincibilità.
+            }
+
+            # ── LISTE OGGETTI DI GIOCO ──
+            # Lista dei proiettili sparati dal giocatore attualmente attivi.
+            bullets = []
+            # Lista dei nemici attualmente presenti sullo schermo.
+            enemies = []
+            # Lista dei proiettili sparati dai nemici attualmente attivi.
+            enemy_bullets = []
+            # Lista dei missili orizzontali attualmente presenti.
+            missiles = []
+            # Lista dei power-up attualmente presenti sullo schermo.
+            boosts = []
+            # Lista dei missili del boss attualmente attivi.
+            boss_missiles = []
+
+            # ── STATO BOSS ──
+            # Boss inizialmente assente; viene creato al raggiungimento della soglia punteggio.
+            boss = None
+            # Numero dell'ondata boss corrente, aumenta ad ogni boss sconfitto.
+            wave_number = 1
+            # Soglia di punteggio alla quale apparirà il prossimo boss.
+            next_boss_score = 3000
+            # Flag che indica se è attiva la schermata di avviso ondata boss.
+            warning_active = False
+            # Timestamp di inizio dell'avviso ondata boss.
+            warning_start_time = 0
+
+            # ── STATO PARTITA ──
+            # Punteggio corrente del giocatore, inizia da zero.
+            score = 0
+            # Contatore di frame per lo spawn dei nemici.
+            enemy_spawn_timer = 0
+            # Contatore di frame per lo spawn dei missili.
+            missile_spawn_timer = 0
+            # Contatore di frame per lo spawn dei power-up.
+            boost_spawn_timer = 0
+            # Contatore di frame per l'effetto flash rosso quando il giocatore subisce danno.
+            damage_flash = 0
+            # Flag che mantiene il loop di gioco attivo.
+            running = True
+
+            # ── LOOP DI GIOCO ──
+            # Continua finché il giocatore non muore o non preme ESC.
+            while running:
+                # Ottieni il timestamp corrente in millisecondi.
+                current_time = pygame.time.get_ticks()
+
+                # ── GESTIONE EVENTI ──
+                for event in pygame.event.get():
+                    # Se l'utente chiude la finestra, interrompi la partita.
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    # Controlla i tasti speciali premuti.
+                    if event.type == pygame.KEYDOWN:
+                        # ESC durante la partita torna al menu principale.
+                        if event.key == pygame.K_ESCAPE:
+                            running = False
+                            state = "MENU"
+
+                # Se ESC è stato premuto, salta il resto del loop.
+                if not running:
+                    break
+
+                # ── INPUT CONTINUO ──
+                # Legge lo stato di tutti i tasti in questo frame.
+                keys = pygame.key.get_pressed()
+
+                # ── LOGICA AVVISO BOSS ──
+                # Controlla se il punteggio ha raggiunto la soglia del prossimo boss.
+                if score >= next_boss_score and boss is None and not warning_active:
+                    # Attiva la schermata di avviso ondata.
+                    warning_active = True
+                    # Registra il momento in cui l'avviso è iniziato.
+                    warning_start_time = current_time
+                    # Aggiorna la soglia per il boss successivo.
+                    next_boss_score += 3000
+
+                # Controlla se l'avviso è durato abbastanza a lungo.
+                if warning_active and current_time - warning_start_time > 3000:
+                    # Disattiva l'avviso.
+                    warning_active = False
+                    # Calcola la vita del boss in base al numero ondata.
+                    boss_hp = 1000 + (wave_number - 1) * 400
+                    # Calcola il danno dei missili del boss in base all'ondata.
+                    boss_dmg = 15 + (wave_number - 1) * 3
+                    # Calcola la velocità dei missili del boss in base all'ondata.
+                    boss_ms = 5.0 + (wave_number - 1) * 0.5
+                    # Calcola il ritardo di sparo del boss, decresce con le ondate.
+                    boss_sd = max(400, 900 - wave_number * 100)
+                    # Crea il dizionario del boss con tutti i parametri calcolati.
+                    boss = {
+                        "x": WIDTH + 50, "y": HEIGHT // 2 - 75,    # Posizione iniziale fuori schermo.
+                        "width": 150, "height": 150,                 # Dimensioni del boss.
+                        "speed": 2,                                  # Velocità di movimento verticale.
+                        "health": boss_hp, "max_health": boss_hp,    # Vita totale.
+                        "damage": boss_dmg,                          # Danno per colpo.
+                        "missile_speed": boss_ms,                    # Velocità missili.
+                        "last_shot": current_time,                   # Timestamp ultimo sparo.
+                        "shoot_delay": boss_sd,                      # Millisecondi tra spari.
+                        "direction": 1,                              # 1 = giù, -1 = su.
+                        "entering": True,                            # True mentre entra da destra.
+                    }
+                    # Incrementa il numero ondata per il boss successivo.
+                    wave_number += 1
+                    # Elimina tutti i nemici e proiettili presenti durante l'ondata boss.
+                    enemies.clear()
+                    enemy_bullets.clear()
+                    missiles.clear()
+                    boosts.clear()
+
+                # ── AGGIORNAMENTO GIOCATORE ──
+                # Muovi il giocatore su in base all'input, rispettando il bordo superiore.
+                if keys[pygame.K_UP] and player["y"] > 0:
+                    player["y"] -= player["speed"]
+                # Muovi il giocatore giù in base all'input, rispettando il bordo inferiore.
+                if keys[pygame.K_DOWN] and player["y"] < HEIGHT - player["height"]:
+                    player["y"] += player["speed"]
+                # Muovi il giocatore a sinistra, rispettando il bordo sinistro.
+                if keys[pygame.K_LEFT] and player["x"] > 0:
+                    player["x"] -= player["speed"]
+                # Muovi il giocatore a destra, rispettando il bordo destro.
+                if keys[pygame.K_RIGHT] and player["x"] < WIDTH - player["width"]:
+                    player["x"] += player["speed"]
+
+                # Applica il buff velocità se ancora attivo, altrimenti resetta.
+                if current_time < player["speed_end_time"]:
+                    # Buff attivo: velocità aumentata e rateo di fuoco più alto.
+                    player["speed"] = player["base_speed"] + 3
+                    player["fire_rate"] = 100
+                else:
+                    # Buff scaduto: ripristina i valori base.
+                    player["speed"] = player["base_speed"]
+                    player["fire_rate"] = 300
+
+                # Applica il buff potenza se ancora attivo, altrimenti resetta.
+                if current_time < player["power_end_time"]:
+                    # Buff attivo: potenza di fuoco triplicata.
+                    player["power"] = 3
+                else:
+                    # Buff scaduto: potenza normale.
+                    player["power"] = 1
+
+                # ── SPARO GIOCATORE ──
+                # Controlla se SPAZIO è premuto e se è trascorso abbastanza tempo dall'ultimo sparo.
+                if keys[pygame.K_SPACE] and current_time - player["last_shot"] > player["fire_rate"]:
+                    # Aggiorna il timestamp dell'ultimo sparo.
+                    player["last_shot"] = current_time
+                    # Crea un nuovo proiettile partendo dal bordo destro del giocatore.
+                    bullets.append({
+                        "x": player["x"] + player["width"],          # Parte dal bordo destro.
+                        "y": player["y"] + player["height"] // 2,    # Centrato verticalmente.
+                        "width": 15 * player["power"],               # Larghezza proporzionale alla potenza.
+                        "height": 8,                                  # Altezza fissa.
+                        "speed": 12,                                  # Velocità costante.
+                        "power": player["power"],                     # Potenza corrente.
+                    })
+
+                # ── SPAWN NEMICI E OGGETTI (solo fuori ondata boss) ──
+                if not warning_active and boss is None:
+                    # Incrementa il timer di spawn nemici.
+                    enemy_spawn_timer += 1
+                    # Spawn un nemico ogni 100 frame in base (70 in avanzato).
+                    if enemy_spawn_timer > (100 if settings["difficulty"] == "base" else 70):
+                        # Crea un nemico con posizione casuale fuori schermo.
+                        enemies.append({
+                            "x": WIDTH + random.randint(0, 100),        # Entra da destra.
+                            "y": random.randint(50, HEIGHT - 110),       # Altezza casuale.
+                            "width": 60, "height": 60,                   # Dimensioni nemico.
+                            "speed": 3 if settings["difficulty"] == "base" else 5,  # Velocità.
+                            "last_shot": current_time,                   # Timestamp sparo.
+                            "shoot_delay": random.randint(1000, 2500),   # Ritardo sparo casuale.
+                            "health": 100, "max_health": 100,            # Vita piena.
+                        })
+                        # Resetta il timer di spawn nemici.
+                        enemy_spawn_timer = 0
+
+                    # Incrementa il timer di spawn missili.
+                    missile_spawn_timer += 1
+                    # Spawn un missile ogni 180 frame in base (130 in avanzato).
+                    if missile_spawn_timer > (180 if settings["difficulty"] == "base" else 130):
+                        # Crea un missile con posizione casuale fuori schermo.
+                        missiles.append({
+                            "x": WIDTH + random.randint(0, 100),        # Entra da destra.
+                            "y": random.randint(50, HEIGHT - 100),       # Altezza casuale.
+                            "width": 50, "height": 20,                   # Dimensioni visive.
+                            "speed": 4 if settings["difficulty"] == "base" else 6,  # Velocità.
+                        })
+                        # Resetta il timer di spawn missili.
+                        missile_spawn_timer = 0
+
+                    # Incrementa il timer di spawn power-up.
+                    boost_spawn_timer += 1
+                    # Spawn un power-up ogni 250 frame.
+                    if boost_spawn_timer > 250:
+                        # Crea un power-up di tipo casuale tra i quattro disponibili.
+                        boosts.append({
+                            "x": WIDTH + random.randint(0, 100),                           # Entra da destra.
+                            "y": random.randint(100, HEIGHT - 150),                         # Altezza casuale.
+                            "width": 50, "height": 50,                                      # Dimensioni icona.
+                            "speed": 3,                                                      # Velocità costante.
+                            "type": random.choice(["power", "health", "speed", "invincibility"]),  # Tipo casuale.
+                        })
+                        # Resetta il timer di spawn power-up.
+                        boost_spawn_timer = 0
+
+                # ── AGGIORNAMENTO BOSS ──
+                if boss:
+                    # Se il boss sta ancora entrando da destra, muovilo verso sinistra.
+                    if boss["entering"]:
+                        if boss["x"] > WIDTH - boss["width"] - 50:
+                            # Avanza il boss verso la posizione di combattimento.
+                            boss["x"] -= 3
+                        else:
+                            # Il boss ha raggiunto la posizione, inizia a combattere.
+                            boss["entering"] = False
+                    # Movimento verticale del boss quando non sta entrando.
+                    if not boss["entering"]:
+                        # Sposta il boss verticalmente nella direzione corrente.
+                        boss["y"] += boss["speed"] * boss["direction"]
+                        # Inverte la direzione se tocca il bordo superiore.
+                        if boss["y"] <= 20:
+                            boss["direction"] = 1
+                        # Inverte la direzione se tocca il bordo inferiore.
+                        elif boss["y"] + boss["height"] >= HEIGHT - 20:
+                            boss["direction"] = -1
+                    # Sparo boss: controlla il cooldown e spara se pronto.
+                    if not boss["entering"] and current_time - boss["last_shot"] > boss["shoot_delay"]:
+                        # Aggiorna il timestamp dell'ultimo sparo del boss.
+                        boss["last_shot"] = current_time
+                        # Calcola il centro del giocatore come target del missile.
+                        tx = player["x"] + player["width"] // 2
+                        ty = player["y"] + player["height"] // 2
+                        # Calcola la differenza di posizione tra boss e giocatore.
+                        dx = tx - boss["x"]
+                        dy = ty - (boss["y"] + boss["height"] // 2)
+                        # Calcola la distanza euclidea tra boss e giocatore.
+                        dist = math.hypot(dx, dy)
+                        # Normalizza il vettore direzione se la distanza non è zero.
+                        if dist != 0:
+                            dx /= dist
+                            dy /= dist
+                        else:
+                            # Direzione default verso sinistra se il boss è sovrapposto al giocatore.
+                            dx, dy = -1, 0
+                        # Crea il missile del boss con direzione normalizzata verso il giocatore.
+                        boss_missiles.append({
+                            "x": boss["x"],                              # Parte dal bordo sinistro del boss.
+                            "y": boss["y"] + boss["height"] // 2,        # Centrato verticalmente.
+                            "width": 30, "height": 15,                   # Dimensioni visive.
+                            "dx": dx, "dy": dy,                          # Direzione normalizzata.
+                            "speed": boss["missile_speed"],              # Velocità del missile.
+                            "damage": boss["damage"],                    # Danno per impatto.
+                        })
+
+                # ── MOVIMENTO PROIETTILI GIOCATORE ──
+                for b in bullets[:]:
+                    # Muovi il proiettile verso destra.
+                    b["x"] += b["speed"]
+                    # Rimuovi il proiettile se esce dal bordo destro dello schermo.
+                    if b["x"] > WIDTH:
+                        bullets.remove(b)
+
+                # ── MOVIMENTO NEMICI ──
+                for e in enemies[:]:
+                    # Muovi il nemico verso sinistra.
+                    e["x"] -= e["speed"]
+                    # Controlla se il nemico può sparare in base al cooldown.
+                    if current_time - e["last_shot"] > e["shoot_delay"]:
+                        # Aggiorna il timestamp dello sparo del nemico.
+                        e["last_shot"] = current_time
+                        # Assegna un nuovo ritardo di sparo casuale.
+                        e["shoot_delay"] = random.randint(1000, 2500)
+                        # Crea un proiettile nemico centrato verticalmente.
+                        enemy_bullets.append({
+                            "x": e["x"],                        # Parte dal bordo sinistro del nemico.
+                            "y": e["y"] + e["height"] // 2,     # Centrato verticalmente.
+                            "width": 10, "height": 10,          # Dimensioni proiettile nemico.
+                            "speed": 7,                         # Velocità costante verso sinistra.
+                        })
+                    # Rimuovi il nemico se esce completamente dal bordo sinistro.
+                    if e["x"] < -e["width"]:
+                        enemies.remove(e)
+
+                # ── MOVIMENTO PROIETTILI NEMICI ──
+                for eb in enemy_bullets[:]:
+                    # Muovi il proiettile verso sinistra.
+                    eb["x"] -= eb["speed"]
+                    # Rimuovi il proiettile se esce dal bordo sinistro.
+                    if eb["x"] < 0:
+                        enemy_bullets.remove(eb)
+
+                # ── MOVIMENTO MISSILI ──
+                for m in missiles[:]:
+                    # Muovi il missile verso sinistra.
+                    m["x"] -= m["speed"]
+                    # Rimuovi il missile se esce completamente dal bordo sinistro.
+                    if m["x"] < -m["width"] - 20:
+                        missiles.remove(m)
+
+                # ── MOVIMENTO POWER-UP ──
+                for b in boosts[:]:
+                    # Muovi il power-up verso sinistra.
+                    b["x"] -= b["speed"]
+                    # Rimuovi il power-up se esce dal bordo sinistro.
+                    if b["x"] < -b["width"]:
+                        boosts.remove(b)
+
+                # ── MOVIMENTO MISSILI BOSS ──
+                for hm in boss_missiles[:]:
+                    # Muovi il missile nella direzione normalizzata moltiplicata per la velocità.
+                    hm["x"] += hm["dx"] * hm["speed"]
+                    hm["y"] += hm["dy"] * hm["speed"]
+                    # Rimuovi il missile se esce dai bordi della finestra.
+                    if hm["x"] < -50 or hm["x"] > WIDTH + 50 or hm["y"] < -50 or hm["y"] > HEIGHT + 50:
+                        if hm in boss_missiles:
+                            boss_missiles.remove(hm)
+
+                # ── CALCOLO HITBOX GIOCATORE ──
+                # Usa una hitbox ridotta al centro del razzo per maggiore precisione.
+                player_rect = pygame.Rect(player["x"] + 20, player["y"] + 55, 140, 70)
+
+                # ── COLLISIONI PROIETTILI -> BOSS ──
+                if boss:
+                    # Rettangolo del boss per il rilevamento collisioni.
+                    boss_rect = pygame.Rect(boss["x"], boss["y"], boss["width"], boss["height"])
+                    for b in bullets[:]:
+                        # Rettangolo del proiettile.
+                        b_rect = pygame.Rect(b["x"], b["y"], b["width"], b["height"])
+                        # Controlla la collisione tra proiettile e boss.
+                        if b_rect.colliderect(boss_rect):
+                            # Rimuovi il proiettile che ha colpito.
+                            if b in bullets: bullets.remove(b)
+                            # Calcola il danno: triplo se potenziato, normale altrimenti.
+                            damage = 100 if b["power"] > 1 else 50
+                            # Riduci la vita del boss del danno calcolato.
+                            boss["health"] -= damage
+                            # Se la vita del boss arriva a zero, eliminalo.
+                            if boss["health"] <= 0:
+                                # Assegna il bonus punti per la sconfitta del boss.
+                                score += 500
+                                # Rimuovi il boss dal gioco.
+                                boss = None
+                                # Elimina tutti i missili del boss rimasti.
+                                boss_missiles.clear()
+                            # Interrompi il ciclo dopo il primo impatto per evitare duplicati.
+                            break
+
+                # ── COLLISIONI PROIETTILI -> NEMICI ──
+                for b in bullets[:]:
+                    for e in enemies[:]:
+                        # Controlla collisione AABB tra proiettile e nemico.
+                        if (b["x"] < e["x"] + e["width"] and b["x"] + b["width"] > e["x"] and
+                                b["y"] < e["y"] + e["height"] and b["y"] + b["height"] > e["y"]):
+                            # Rimuovi il proiettile dal gioco.
+                            if b in bullets: bullets.remove(b)
+                            # Danno potenziato o normale.
+                            damage = 100 if b["power"] > 1 else 50
+                            # Riduce la vita del nemico.
+                            e["health"] -= damage
+                            # Se il nemico è eliminato, rimuovilo e assegna punti.
+                            if e["health"] <= 0:
+                                if e in enemies: enemies.remove(e)
+                                score += 10
+
+                # ── COLLISIONI NEMICI -> GIOCATORE (solo senza invincibilità) ──
+                if current_time >= player["invincibility_end_time"]:
+                    # Controlla collisione con i proiettili nemici.
+                    for eb in enemy_bullets[:]:
+                        # Hitbox leggermente ridotta del proiettile nemico.
+                        eb_rect = pygame.Rect(eb["x"] - 5, eb["y"] - 5, 10, 10)
+                        if player_rect.colliderect(eb_rect):
+                            # Rimuovi il proiettile nemico.
+                            if eb in enemy_bullets: enemy_bullets.remove(eb)
+                            # Applica danno al giocatore.
+                            player["health"] -= 10
+                            # Attiva il flash di danno per 12 frame.
+                            damage_flash = 12
+
+                    # Controlla collisione con i missili orizzontali.
+                    for m in missiles[:]:
+                        # Hitbox ridotta del missile per maggiore precisione.
+                        m_rect = pygame.Rect(m["x"] + 15, m["y"] + 6, 20, 8)
+                        if player_rect.colliderect(m_rect):
+                            # Rimuovi il missile collidente.
+                            if m in missiles: missiles.remove(m)
+                            # I missili fanno più danno dei proiettili nemici.
+                            player["health"] -= 20
+                            # Flash più lungo per danno maggiore.
+                            damage_flash = 20
+
+                    # Controlla collisione con i missili del boss.
+                    for hm in boss_missiles[:]:
+                        # Hitbox del missile boss.
+                        hm_rect = pygame.Rect(hm["x"], hm["y"], hm["width"], hm["height"])
+                        if player_rect.colliderect(hm_rect):
+                            # Rimuovi il missile boss collidente.
+                            if hm in boss_missiles: boss_missiles.remove(hm)
+                            # Il danno del boss è variabile e dipende dall'ondata.
+                            player["health"] -= hm["damage"]
+                            # Flash medio per danno boss.
+                            damage_flash = 15
+
+                # ── COLLISIONI POWER-UP -> GIOCATORE ──
+                for b in boosts[:]:
+                    # Rettangolo del power-up.
+                    b_rect = pygame.Rect(b["x"], b["y"], b["width"], b["height"])
+                    if player_rect.colliderect(b_rect):
+                        # Rimuovi il power-up raccolto.
+                        if b in boosts: boosts.remove(b)
+                        # Durata dei buff temporanei in millisecondi.
+                        duration = 7000
+                        # Applica l'effetto in base al tipo di power-up.
+                        if b["type"] == "power":
+                            # Attiva il buff potenza per 7 secondi.
+                            player["power_end_time"] = current_time + duration
+                        elif b["type"] == "speed":
+                            # Attiva il buff velocità per 7 secondi.
+                            player["speed_end_time"] = current_time + duration
+                        elif b["type"] == "invincibility":
+                            # Attiva il buff invincibilità per 7 secondi.
+                            player["invincibility_end_time"] = current_time + duration
+                        elif b["type"] == "health":
+                            # Ripristina 30 punti vita senza superare il massimo.
+                            player["health"] = min(player["health"] + 30, player["max_health"])
+                        # Assegna 5 punti per ogni power-up raccolto.
+                        score += 5
+
+                # ── PUNTEGGIO PROGRESSIVO ──
+                # Incrementa il punteggio di 1 ogni frame (circa 60 punti al secondo).
+                score += 1
+                # Assicura che la vita non scenda sotto zero.
+                player["health"] = max(player["health"], 0)
+                # Se la vita arriva a zero, termina il loop di gioco.
+                if player["health"] <= 0:
+                    running = False
+
+                # ── RENDERING ──
+                # Disegna lo sfondo o il colore di fallback grigio.
+                if background:
+                    screen.blit(background, (0, 0))
+                else:
+                    screen.fill(GRAY)
+
+                # Disegna il flash di danno rosso semi-trasparente se attivo.
+                if damage_flash > 0:
+                    # Crea una superficie trasparente per il flash.
+                    flash_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                    # Calcola l'alpha proporzionale ai frame rimanenti.
+                    alpha = int(120 * (damage_flash / 20))
+                    # Riempie con rosso semi-trasparente.
+                    flash_surf.fill((220, 0, 0, alpha))
+                    # Applica il flash sopra lo sfondo.
+                    screen.blit(flash_surf, (0, 0))
+                    # Decrementa il contatore del flash.
+                    damage_flash -= 1
+
+                # Disegna tutti i proiettili del giocatore come ellissi gialle.
+                for b in bullets:
+                    pygame.draw.ellipse(screen, YELLOW, (b["x"], b["y"], b["width"], b["height"]))
+
+                # Disegna tutti i nemici con la loro barra vita.
+                for e in enemies:
+                    draw_enemy(screen, e)
+
+                # Disegna i proiettili nemici come piccoli cerchi rossi.
+                for eb in enemy_bullets:
+                    pygame.draw.circle(screen, (255, 50, 50), (int(eb["x"]), int(eb["y"])), 5)
+
+                # Disegna i missili con immagine o forma geometrica di fallback.
+                for m in missiles:
+                    if missile_img:
+                        # Usa l'immagine del missile se disponibile.
+                        screen.blit(missile_img, (m["x"], m["y"]))
+                    else:
+                        # Calcola il centro verticale del missile per il fallback.
+                        cy = m["y"] + m["height"] // 2
+                        # Disegna il corpo ellittico grigio del missile.
+                        pygame.draw.ellipse(screen, (160, 160, 170), (m["x"], m["y"] + 3, m["width"], m["height"] - 6))
+                        # Disegna il cono di fuoco arancione dietro il missile.
+                        pygame.draw.polygon(screen, (255, 180, 0), [
+                            (m["x"] + m["width"] + 10, cy - 4),
+                            (m["x"] + m["width"] + 10, cy + 4),
+                            (m["x"] + m["width"] + 22, cy),
+                        ])
+
+                # Disegna tutti i power-up presenti.
+                for b in boosts:
+                    draw_boost(screen, b)
+
+                # Disegna il boss e i suoi missili se presente.
+                if boss:
+                    # Usa la funzione dedicata per il boss con barra vita.
+                    draw_boss(screen, boss)
+                    # Disegna i missili del boss come ellissi viola.
+                    for hm in boss_missiles:
+                        pygame.draw.ellipse(screen, (150, 0, 150), (hm["x"], hm["y"], hm["width"], hm["height"]))
+
+                # Disegna il giocatore con eventuale effetto invincibilità.
+                draw_player(screen, player, current_time)
+                # Disegna l'HUD con vita, punteggio e stato power-up.
+                draw_hud(screen, player, score, hud_font, small_font, current_time)
+
+                # Mostra il messaggio di avviso ondata boss lampeggiante.
+                if warning_active:
+                    # Renderizza il testo dell'ondata in rosso.
+                    warn_text = big_font.render(f"ONDATA {wave_number}", True, RED)
+                    # Fa lampeggiare il testo ogni 200ms.
+                    if (current_time // 200) % 2 == 0:
+                        # Centra il testo nella finestra.
+                        text_rect = warn_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                        # Disegna il testo di avviso al centro dello schermo.
+                        screen.blit(warn_text, text_rect)
+
+                # Disegna il suggerimento sui controlli in basso centrato.
+                hint = small_font.render("← ↑ ↓ → Muovi  |  SPAZIO Spara  |  ESC Menu", True, (180, 180, 180))
+                # Posiziona il suggerimento nella parte bassa della finestra.
+                screen.blit(hint, (WIDTH // 2 - hint.get_width() // 2, HEIGHT - 28))
+
+                # Aggiorna il display con tutto ciò che è stato disegnato.
+                pygame.display.flip()
+                # Limita il loop a 60 FPS per un gameplay fluido e coerente.
+                clock.tick(60)
+
+            # Al termine del loop di gioco, aggiorna lo stato in base all'uscita.
+            if state != "MENU":
+                # Solo se non è ESC, vai al game over.
+                state = "GAMEOVER"
+
+        # ════════════════════════════════════════════════════════════
+        # STATO: GAME OVER
+        # ════════════════════════════════════════════════════════════
+        elif state == "GAMEOVER":
+            # Ferma la musica di gioco appena si entra nel game over.
+            pygame.mixer.music.stop()
+            # Salva il punteggio finale se supera il record precedente.
+            save_high_score(score)
+
+            # Rettangolo del bottone RIPROVA nel game over.
+            button_retry = pygame.Rect(WIDTH // 2 - 150, 420, 140, 60)
+            # Rettangolo del bottone MENU nel game over.
+            button_menu_go = pygame.Rect(WIDTH // 2 + 10, 420, 140, 60)
+
+            # Loop della schermata game over.
+            while state == "GAMEOVER":
+                # Posizione corrente del cursore del mouse.
+                mouse_pos = pygame.mouse.get_pos()
+                # Flag click reset a False ogni frame.
+                click = False
+
+                # Cicla tutti gli eventi pygame in coda.
+                for event in pygame.event.get():
+                    # Se l'utente chiude la finestra, termina l'applicazione.
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    # Rileva click del mouse.
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        click = True
+
+                # Riempie lo sfondo di nero per il game over.
+                screen.fill(BLACK)
+
+                # Renderizza il testo "GAME OVER" in rosso grande.
+                go_text = go_font_big.render("GAME OVER", True, RED)
+                # Centra e disegna il titolo game over.
+                screen.blit(go_text, (WIDTH // 2 - go_text.get_width() // 2, 120))
+
+                # Disegna una linea separatrice orizzontale bianca.
+                pygame.draw.line(screen, WHITE, (100, 230), (WIDTH - 100, 230), 2)
+
+                # Mostra "NUOVO RECORD!" se il punteggio attuale è il nuovo massimo.
+                if score == HIGH_SCORE and score > 0:
+                    # Messaggio nuovo record in giallo.
+                    new_rec = go_font_small.render("NUOVO RECORD!", True, YELLOW)
+                    # Centra e disegna il messaggio.
+                    screen.blit(new_rec, (WIDTH // 2 - new_rec.get_width() // 2, 260))
+                    # Punteggio finale in lilla sotto il messaggio record.
+                    sc_text = go_font_small.render(f"PUNTEGGIO: {score}", True, LILAC)
+                    # Centra e disegna il punteggio.
+                    screen.blit(sc_text, (WIDTH // 2 - sc_text.get_width() // 2, 310))
+                else:
+                    # Punteggio finale in lilla se non è record.
+                    sc_text = go_font_small.render(f"PUNTEGGIO: {score}", True, LILAC)
+                    # Centra e disegna il punteggio.
+                    screen.blit(sc_text, (WIDTH // 2 - sc_text.get_width() // 2, 260))
+                    # Record attuale in lilla sotto il punteggio.
+                    rec_text = go_font_small.render(f"RECORD: {HIGH_SCORE}", True, LILAC)
+                    # Centra e disegna il record.
+                    screen.blit(rec_text, (WIDTH // 2 - rec_text.get_width() // 2, 310))
+
+                # Determina se il mouse è sopra il bottone RIPROVA.
+                hover_retry = button_retry.collidepoint(mouse_pos)
+                # Colore viola per hover, bianco altrimenti.
+                retry_color = PURPLE if hover_retry else WHITE
+                # Disegna il rettangolo del bottone RIPROVA.
+                pygame.draw.rect(screen, retry_color, button_retry, border_radius=10)
+                # Disegna il bordo bianco del bottone.
+                pygame.draw.rect(screen, WHITE, button_retry, 3, border_radius=10)
+                # Testo con colore invertito per contrasto.
+                txt_retry = button_font.render("RIPROVA", True, WHITE if hover_retry else BLACK)
+                # Centra e disegna il testo nel bottone RIPROVA.
+                screen.blit(txt_retry, (button_retry.centerx - txt_retry.get_width() // 2, button_retry.centery - txt_retry.get_height() // 2))
+
+                # Determina se il mouse è sopra il bottone MENU.
+                hover_menu_go = button_menu_go.collidepoint(mouse_pos)
+                # Colore viola per hover, bianco altrimenti.
+                menu_go_color = PURPLE if hover_menu_go else WHITE
+                # Disegna il rettangolo del bottone MENU.
+                pygame.draw.rect(screen, menu_go_color, button_menu_go, border_radius=10)
+                # Disegna il bordo bianco del bottone.
+                pygame.draw.rect(screen, WHITE, button_menu_go, 3, border_radius=10)
+                # Testo con colore invertito per contrasto.
+                txt_menu_go = button_font.render("MENU", True, WHITE if hover_menu_go else BLACK)
+                # Centra e disegna il testo nel bottone MENU.
+                screen.blit(txt_menu_go, (button_menu_go.centerx - txt_menu_go.get_width() // 2, button_menu_go.centery - txt_menu_go.get_height() // 2))
+
+                # Gestisce i click sui bottoni del game over.
+                if click:
+                    # Click su RIPROVA: suono e nuova partita.
+                    if hover_retry:
+                        if click_sound: click_sound.play()
+                        state = "GAME"
+                    # Click su MENU: suono e ritorno al menu principale.
+                    if hover_menu_go:
+                        if click_sound: click_sound.play()
+                        state = "MENU"
+
+                # Aggiorna il display.
+                pygame.display.flip()
+                # Limita a 60 FPS.
+                clock.tick(60)
 
 
-# Punto di ingresso.
+# ───────────── SEZIONE 13: PUNTO DI INGRESSO ─────────────
+
+# Punto di ingresso: esegue main solo se il file è avviato direttamente.
 if __name__ == "__main__":
+    # Carica il record e avvia il ciclo principale dell'applicazione.
     main()
